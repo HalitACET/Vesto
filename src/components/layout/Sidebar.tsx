@@ -5,26 +5,22 @@ import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     Shirt,
-    Sparkles,
     Palette,
-    Users,
-    ShieldCheck,
+    MessageSquareWarning,
+    Settings,
     ChevronRight,
+    Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/wardrobe", label: "Wardrobe", icon: Shirt },
-    { href: "/dashboard/outfits", label: "Outfits", icon: Sparkles },
-    { href: "/dashboard/canvas", label: "Stylist Canvas", icon: Palette },
-    { href: "/dashboard/community", label: "Community", icon: Users },
-];
-
-const adminItems = [
-    { href: "/admin", label: "Admin Panel", icon: ShieldCheck },
+    { href: "/dashboard", label: "Genel Bakış", icon: LayoutDashboard },
+    { href: "/dashboard/wardrobe", label: "Kullanıcı Gardıropları", icon: Shirt },
+    { href: "/dashboard/canvas", label: "Kombin Editörü", icon: Palette },
+    { href: "/dashboard/community", label: "Forum Moderasyonu", icon: MessageSquareWarning },
+    { href: "/dashboard/settings", label: "Ayarlar", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -89,36 +85,6 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
                         </Link>
                     );
                 })}
-
-                {/* Admin section */}
-                {isAdmin && (
-                    <>
-                        <div className="mt-6 mb-2 px-3">
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                                Administration
-                            </p>
-                        </div>
-                        {adminItems.map((item) => {
-                            const active = pathname.startsWith(item.href);
-                            const Icon = item.icon;
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={cn(
-                                        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
-                                        active
-                                            ? "bg-primary text-primary-foreground"
-                                            : "text-sidebar-foreground hover:bg-sidebar-accent"
-                                    )}
-                                >
-                                    <Icon size={17} className="flex-shrink-0 text-muted-foreground" />
-                                    <span>{item.label}</span>
-                                </Link>
-                            );
-                        })}
-                    </>
-                )}
             </nav>
 
             {/* User info at bottom */}
