@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    function isStylist() {
+      return isAuthenticated() && getUserRole() in ['stylist', 'admin'];
+    }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Anyone authenticated can read public profiles
+      allow read: if isAuthenticated();
+      // Only the user themselves can create/update their own doc
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Wardrobe Items ────────────────────────────────────────────────────────
+    match /wardrobeItems/{itemId} {
+      // Users access their own items; stylists and admins can read any item
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isStylist());
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ── Outfits ───────────────────────────────────────────────────────────────
+    match /outfits/{outfitId} {
+      // Public outfits are readable by all authenticated users
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid ||
+         resource.data.isPublic == true ||
+         isStylist());
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isStylist());
+      allow delete: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ── Forum Posts ───────────────────────────────────────────────────────────
+    match /forumPosts/{postId} {
+      // Non-moderated posts are public to authenticated users
+      allow read: if isAuthenticated() && resource.data.isModerated == false;
+      allow create: if isAuthenticated() &&
+        request.resource.data.authorId == request.auth.uid;
+      // Only moderators (stylist+) or the author can update
+      allow update: if isAuthenticated() &&
+        (resource.data.authorId == request.auth.uid || isStylist());
+      allow delete: if isAdmin();
+    }
+
+    // ── Forum Comments ────────────────────────────────────────────────────────
+    match /forumComments/{commentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.authorId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        resource.data.authorId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+
+    // ── Style Recommendations (stylist → user) ────────────────────────────────
+    match /styleRecommendations/{recId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.stylistId == request.auth.uid ||
+         resource.data.userId == request.auth.uid);
+      allow create: if isStylist() &&
+        request.resource.data.stylistId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+      allow delete: if isStylist();
+    }
+  }
+}
