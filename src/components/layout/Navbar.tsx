@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Menu } from "lucide-react";
+import { Sparkles, Menu, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface NavbarProps {
     onMenuToggle?: () => void;
@@ -23,6 +24,7 @@ interface NavbarProps {
 export function Navbar({ onMenuToggle }: NavbarProps) {
     const { firebaseUser, vestoUser, loading } = useAuth();
     const router = useRouter();
+    const { theme, toggleTheme } = useTheme();
 
     const initials = vestoUser?.displayName
         ?.split(" ")
@@ -78,6 +80,15 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
 
                 {/* Right: user menu */}
                 <div className="flex items-center gap-3">
+                    {/* Dark mode toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        aria-label="Toggle dark mode"
+                        className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                        {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+                    </button>
+
                     {loading ? (
                         <Skeleton className="h-8 w-8 rounded-full" />
                     ) : firebaseUser ? (
