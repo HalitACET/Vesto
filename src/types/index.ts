@@ -12,6 +12,16 @@ export type ClothingCategory =
 
 export type Season = "spring" | "summer" | "autumn" | "winter" | "all";
 
+export type OutfitSeason = "spring" | "summer" | "fall" | "winter";
+
+export type OutfitVisibility = "private" | "public" | "followers";
+
+export type OutfitSource = "manual" | "ai_suggestion" | "stylist_recommendation";
+
+export type OutfitStatus = "draft" | "pending_acceptance" | "accepted" | "rejected";
+
+export type AdminReviewStatus = "pending" | "approved" | "rejected" | "corrected";
+
 export type OccasionTag =
     | "casual"
     | "formal"
@@ -50,6 +60,20 @@ export interface AIAnalysis {
     validatedByAdmin?: boolean;
 }
 
+// Nullable — backward compatible with mobile (missing field = not reviewed yet)
+export interface AdminReview {
+    status: AdminReviewStatus;
+    reviewedBy: string;       // Admin UID
+    reviewedAt: string;       // ISO timestamp
+    corrections: {
+        color?: string;
+        material?: string;
+        pattern?: string;
+        category?: string;
+    } | null;
+    notes: string | null;
+}
+
 export interface WardrobeItem {
     id: string;
     userId: string;
@@ -62,6 +86,7 @@ export interface WardrobeItem {
     season: Season[];
     occasions: OccasionTag[];
     aiAnalysis?: AIAnalysis;
+    adminReview?: AdminReview | null;  // null = not reviewed; nullable → mobile backward compat
     isFavorite: boolean;
     wearCount: number;
     lastWornAt?: string;
@@ -79,21 +104,54 @@ export interface OutfitItem {
     scale?: number;
 }
 
+export interface CanvasLayoutItem {
+    itemId: string;
+    x: number;
+    y: number;
+    scale: number;
+    rotation: number;
+    zIndex: number;
+}
+
+export interface OutfitItemSnapshot {
+    id: string;
+    imageUrl: string;
+    category: ClothingCategory;
+    dominantColor: string;
+}
+
 export interface Outfit {
     id: string;
     userId: string;
     name: string;
+    description: string | null;
+    // Legacy field — kept for mobile backward compat
     items: OutfitItem[];
-    occasion: OccasionTag;
-    season: Season[];
+    // New fields for canvas-based outfits
+    itemIds: string[];
+    itemSnapshots: OutfitItemSnapshot[];
+    canvasLayout: CanvasLayoutItem[];
+    occasion: OccasionTag | null;
+    season: OutfitSeason[];
+    visibility: OutfitVisibility;
+    source: OutfitSource;
+    // Stylist recommendation fields — nullable for backward compat
+    recommendedBy: string | null;
+    status: OutfitStatus;
+    acceptedAt: string | null;
+    likeCount: number;
+    commentCount: number;
     aiGenerated?: boolean;
     weather?: WeatherCondition[];
     thumbnailUrl?: string;
-    likes: number;
-    isPublic: boolean;
+    // Legacy — kept for mobile backward compat
+    likes?: number;
+    isPublic?: boolean;
     createdAt: string;
     updatedAt: string;
 }
+
+export type UserStatus = "active" | "suspended";
 
 export interface VestoUser {
     uid: string;
@@ -101,6 +159,7 @@ export interface VestoUser {
     displayName: string;
     photoURL?: string;
     role: UserRole;
+    status: UserStatus;
     bio?: string;
     location?: string;
     stylePreferences?: OccasionTag[];
@@ -108,6 +167,8 @@ export interface VestoUser {
     outfitCount?: number;
     followersCount?: number;
     followingCount?: number;
+    assignedStylistId?: string;
+    lastActive?: string;
     createdAt: string;
 }
 

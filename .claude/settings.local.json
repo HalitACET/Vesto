@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"d:/OneDrive/Masaüstü/Vesto-web/.gitignore\")",
+      "Bash(npm install:*)",
+      "Bash(flutter --version)",
+      "Bash(where flutter *)",
+      "Read(//d/OneDrive/Masaüstü/dev---/Mariya/**)"
+    ]
+  }
+}

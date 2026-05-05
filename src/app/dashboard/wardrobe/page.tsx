@@ -13,7 +13,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -75,12 +74,10 @@ export default function WardrobePage() {
                         </p>
                     </div>
                     <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-                        <DialogTrigger>
-                            <Button>
-                                <Plus size={16} className="mr-2" />
-                                Add item
-                            </Button>
-                        </DialogTrigger>
+                        <Button onClick={() => setUploadOpen(true)}>
+                            <Plus size={16} className="mr-2" />
+                            Add item
+                        </Button>
                         <DialogContent className="sm:max-w-lg">
                             <DialogHeader>
                                 <DialogTitle className="text-2xl font-light">

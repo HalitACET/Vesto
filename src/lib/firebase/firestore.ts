@@ -13,7 +13,7 @@ import {
     serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./config";
-import type { WardrobeItem, Outfit, VestoUser, ForumPost } from "@/types";
+import type { WardrobeItem, Outfit, VestoUser, ForumPost, UserRole, UserStatus } from "@/types";
 
 // ─── Wardrobe ─────────────────────────────────────────────────────────────────
 
@@ -86,6 +86,30 @@ export async function getUser(uid: string): Promise<VestoUser | null> {
 export async function getAllUsers(): Promise<VestoUser[]> {
     const snapshot = await getDocs(collection(db, "users"));
     return snapshot.docs.map((d) => ({ uid: d.id, ...d.data() } as VestoUser));
+}
+
+export async function getUsersByRole(role: UserRole): Promise<VestoUser[]> {
+    const q = query(collection(db, "users"), where("role", "==", role));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ uid: d.id, ...d.data() } as VestoUser));
+}
+
+export async function getUsersByStylist(stylistId: string): Promise<VestoUser[]> {
+    const q = query(collection(db, "users"), where("assignedStylistId", "==", stylistId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ uid: d.id, ...d.data() } as VestoUser));
+}
+
+export async function updateUserRole(uid: string, role: UserRole): Promise<void> {
+    await updateDoc(doc(db, "users", uid), { role });
+}
+
+export async function updateUserStatus(uid: string, status: UserStatus): Promise<void> {
+    await updateDoc(doc(db, "users", uid), { status });
+}
+
+export async function updateUser(uid: string, data: Partial<VestoUser>): Promise<void> {
+    await updateDoc(doc(db, "users", uid), data);
 }
 
 // ─── Forum ────────────────────────────────────────────────────────────────────

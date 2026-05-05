@@ -118,7 +118,12 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     className="text-destructive"
-                                    onClick={() => signOut()}
+                                    onClick={async () => {
+                                        await signOut();
+                                        // HTTP-only cookie sadece server temizleyebilir
+                                        await fetch("/api/auth/session", { method: "DELETE" });
+                                        router.push("/login");
+                                    }}
                                 >
                                     Sign out
                                 </DropdownMenuItem>

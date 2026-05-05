@@ -1,5 +1,5 @@
 import { saveOutfit, getOutfits } from "@/lib/firebase/firestore";
-import type { Outfit, OccasionTag, Season, OutfitItem } from "@/types";
+import type { Outfit, OccasionTag, OutfitSeason, OutfitItem } from "@/types";
 
 // ── Read ──────────────────────────────────────────────────────────────────────
 
@@ -7,14 +7,14 @@ export async function fetchUserOutfits(userId: string): Promise<Outfit[]> {
     return getOutfits(userId);
 }
 
-// ── Create ────────────────────────────────────────────────────────────────────
+// ── Create (legacy — canvas için outfitActions.ts kullan) ─────────────────────
 
 export interface CreateOutfitPayload {
     userId: string;
     name: string;
     items: OutfitItem[];
     occasion: OccasionTag;
-    season: Season[];
+    season: OutfitSeason[];
     isPublic?: boolean;
 }
 
@@ -22,11 +22,22 @@ export async function createOutfit(payload: CreateOutfitPayload): Promise<string
     return saveOutfit({
         userId: payload.userId,
         name: payload.name,
+        description: null,
         items: payload.items,
+        itemIds: [],
+        itemSnapshots: [],
+        canvasLayout: [],
         occasion: payload.occasion,
         season: payload.season,
-        isPublic: payload.isPublic ?? false,
+        visibility: payload.isPublic ? "public" : "private",
+        source: "manual",
+        recommendedBy: null,
+        status: "draft",
+        acceptedAt: null,
+        likeCount: 0,
+        commentCount: 0,
         likes: 0,
+        isPublic: payload.isPublic ?? false,
         aiGenerated: false,
     });
 }

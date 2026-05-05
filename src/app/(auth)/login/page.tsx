@@ -8,9 +8,7 @@ import { Sparkles, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { signIn, signOut } from "@/lib/firebase/auth";
-import { fetchUser } from "@/services/userService";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -26,21 +24,22 @@ export default function LoginPage() {
         setError(null);
         try {
             const user = await signIn(email, password);
-            const userProfile = await fetchUser(user.uid);
 
-            if (!userProfile) {
+            // Firebase ID token'ı al, server'a gönder.
+            // Server: token'ı Admin SDK ile doğrular, Firestore'dan rolü çeker,
+            // HTTP-only cookie set eder (browser JS bu cookie'ye erişemez).
+            const idToken = await user.getIdToken();
+            const res = await fetch("/api/auth/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken }),
+            });
+
+            if (!res.ok) {
+                const data = (await res.json()) as { error?: string };
                 await signOut();
-                throw new Error("Kullanıcı profili bulunamadı.");
+                throw new Error(data.error ?? "Giriş başarısız oldu.");
             }
-
-            if (userProfile.role !== "stylist" && userProfile.role !== "admin") {
-                await signOut();
-                throw new Error("Yetkisiz Giriş: Sadece onaylı stilistler ve yöneticiler bu panele erişebilir.");
-            }
-
-            // Middleware için basit bir cookie bırakıyoruz (1 günlük)
-            document.cookie = `vesto_auth=true; path=/; max-age=86400;`;
-            document.cookie = `vesto_role=${userProfile.role}; path=/; max-age=86400;`;
 
             router.push("/dashboard");
         } catch (err: unknown) {

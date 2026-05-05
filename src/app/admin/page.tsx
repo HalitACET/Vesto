@@ -1,64 +1,440 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     CheckCircle,
     XCircle,
-    Search,
+    PencilLine,
     Users,
     Shirt,
     Sparkles,
     ShieldCheck,
     Flag,
+    ArrowRight,
+    AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+    approveWardrobeItem,
+    rejectWardrobeItem,
+    correctWardrobeItem,
+    fetchAIQueue,
+} from "@/app/actions/adminActions";
+import type { WardrobeItem, AdminReviewStatus, ClothingCategory } from "@/types";
 
-// Mock data
-const MOCK_USERS = [
-    { uid: "u1", name: "Sophie Laurent", email: "sophie@example.com", role: "stylist", wardrobeCount: 94, outfitCount: 47 },
-    { uid: "u2", name: "Marcus Chen", email: "marcus@example.com", role: "user", wardrobeCount: 34, outfitCount: 12 },
-    { uid: "u3", name: "Amara Osei", email: "amara@example.com", role: "user", wardrobeCount: 67, outfitCount: 28 },
-    { uid: "u4", name: "Elena Volkov", email: "elena@example.com", role: "stylist", wardrobeCount: 112, outfitCount: 83 },
-    { uid: "u5", name: "James Park", email: "james@example.com", role: "user", wardrobeCount: 21, outfitCount: 5 },
-];
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-const MOCK_AI_QUEUE = [
-    { id: "ai1", user: "Marcus Chen", imageUrl: "", tags: ["tops", "white", "linen", "casual"], confidence: 94 },
-    { id: "ai2", user: "Amara Osei", imageUrl: "", tags: ["outerwear", "beige", "trench", "formal"], confidence: 87 },
-    { id: "ai3", user: "James Park", imageUrl: "", tags: ["shoes", "black", "oxford", "leather"], confidence: 91 },
-];
+type FilterStatus = "all" | "pending" | "approved" | "corrected" | "rejected";
+
+type ModalMode = "correct" | "reject" | null;
+
+interface CorrectForm {
+    color: string;
+    material: string;
+    pattern: string;
+    category: string;
+    notes: string;
+}
+
+// ── AI Tag Validation Tab ─────────────────────────────────────────────────────
+
+function AITagValidationTab() {
+    const [items, setItems] = useState<WardrobeItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState<FilterStatus>("all");
+    const [lowConfidenceOnly, setLowConfidenceOnly] = useState(false);
+
+    const [modalMode, setModalMode] = useState<ModalMode>(null);
+    const [activeItemId, setActiveItemId] = useState<string | null>(null);
+
+    const [rejectNotes, setRejectNotes] = useState("");
+    const [correctForm, setCorrectForm] = useState<CorrectForm>({
+        color: "",
+        material: "",
+        pattern: "",
+        category: "",
+        notes: "",
+    });
+
+    const [isPending, startTransition] = useTransition();
+    const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+    function showToast(msg: string) {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 3000);
+    }
+
+    async function loadItems() {
+        setLoading(true);
+        const result = await fetchAIQueue(filter === "pending" ? "pending" : filter === "all" ? "all" : filter as AdminReviewStatus);
+        if (result.ok && result.items) {
+            setItems(result.items as WardrobeItem[]);
+        }
+        setLoading(false);
+    }
+
+    useEffect(() => {
+        void loadItems();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter]);
+
+    const displayed = lowConfidenceOnly
+        ? items.filter((i) => (i.aiAnalysis?.confidence ?? 1) < 0.7)
+        : items;
+
+    function openCorrect(itemId: string) {
+        setActiveItemId(itemId);
+        setCorrectForm({ color: "", material: "", pattern: "", category: "", notes: "" });
+        setModalMode("correct");
+    }
+
+    function openReject(itemId: string) {
+        setActiveItemId(itemId);
+        setRejectNotes("");
+        setModalMode("reject");
+    }
+
+    function handleApprove(itemId: string) {
+        startTransition(async () => {
+            const res = await approveWardrobeItem({ itemId });
+            if (res.ok) {
+                showToast("✓ Onaylandı");
+                void loadItems();
+            } else {
+                showToast(`Hata: ${res.error ?? "Bilinmeyen hata"}`);
+            }
+        });
+    }
+
+    function handleRejectSubmit() {
+        if (!activeItemId) return;
+        startTransition(async () => {
+            const res = await rejectWardrobeItem({ itemId: activeItemId, notes: rejectNotes });
+            if (res.ok) {
+                setModalMode(null);
+                showToast("✓ Reddedildi");
+                void loadItems();
+            } else {
+                showToast(`Hata: ${res.error ?? "Bilinmeyen hata"}`);
+            }
+        });
+    }
+
+    function handleCorrectSubmit() {
+        if (!activeItemId) return;
+        const corrections: { color?: string; material?: string; pattern?: string; category?: ClothingCategory } = {};
+        if (correctForm.color) corrections.color = correctForm.color;
+        if (correctForm.material) corrections.material = correctForm.material;
+        if (correctForm.pattern) corrections.pattern = correctForm.pattern;
+        if (correctForm.category) corrections.category = correctForm.category as ClothingCategory;
+
+        startTransition(async () => {
+            const res = await correctWardrobeItem({
+                itemId: activeItemId,
+                corrections,
+                notes: correctForm.notes || undefined,
+            });
+            if (res.ok) {
+                setModalMode(null);
+                showToast("✓ Düzeltme kaydedildi");
+                void loadItems();
+            } else {
+                showToast(`Hata: ${res.error ?? "Bilinmeyen hata"}`);
+            }
+        });
+    }
+
+    const reviewStatusBadge: Record<string, { label: string; className: string }> = {
+        approved: { label: "Onaylı", className: "bg-green-500/15 text-green-600 border-0" },
+        rejected: { label: "Reddedildi", className: "bg-destructive/15 text-destructive border-0" },
+        corrected: { label: "Düzeltildi", className: "bg-amber-500/15 text-amber-600 border-0" },
+    };
+
+    return (
+        <div className="space-y-4">
+            {/* Toast */}
+            {toastMsg && (
+                <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-border bg-background px-4 py-3 text-sm shadow-lg">
+                    {toastMsg}
+                </div>
+            )}
+
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="flex gap-1 rounded-lg border border-border p-1">
+                    {(["all", "pending", "approved", "corrected", "rejected"] as FilterStatus[]).map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => setFilter(s)}
+                            className={`rounded-md px-3 py-1 text-xs capitalize transition-colors ${
+                                filter === s
+                                    ? "bg-primary text-primary-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            {s === "all" ? "Tümü" : s === "pending" ? "Bekleyen" : s === "approved" ? "Onaylanan" : s === "corrected" ? "Düzeltilen" : "Reddedilen"}
+                        </button>
+                    ))}
+                </div>
+
+                <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                    <input
+                        type="checkbox"
+                        checked={lowConfidenceOnly}
+                        onChange={(e) => setLowConfidenceOnly(e.target.checked)}
+                        className="rounded"
+                    />
+                    <AlertTriangle size={12} className="text-amber-500" />
+                    Düşük güven ({"<"}70%)
+                </label>
+
+                <span className="ml-auto text-xs text-muted-foreground">{displayed.length} öğe</span>
+            </div>
+
+            {/* List */}
+            {loading ? (
+                <div className="py-12 text-center text-sm text-muted-foreground">Yükleniyor...</div>
+            ) : displayed.length === 0 ? (
+                <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+                        <Sparkles size={28} className="text-muted-foreground/30" />
+                        <p className="text-sm text-muted-foreground">
+                            {filter === "pending" ? "Bekleyen AI etiketi yok." : "Bu filtrede öğe bulunamadı."}
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="space-y-3">
+                    {displayed.map((item) => {
+                        const ai = item.aiAnalysis;
+                        const review = item.adminReview;
+                        const confidencePct = ai ? Math.round(ai.confidence * 100) : null;
+                        const isLow = ai ? ai.confidence < 0.7 : false;
+                        const statusInfo = review ? reviewStatusBadge[review.status] : null;
+
+                        return (
+                            <Card
+                                key={item.id}
+                                className={`transition-all ${
+                                    review?.status === "approved"
+                                        ? "border-green-500/25 bg-green-50/5"
+                                        : review?.status === "rejected"
+                                        ? "border-destructive/25 bg-destructive/5"
+                                        : review?.status === "corrected"
+                                        ? "border-amber-500/25 bg-amber-50/5"
+                                        : ""
+                                }`}
+                            >
+                                <CardContent className="flex items-center gap-5 py-4">
+                                    {/* Thumbnail */}
+                                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+                                        {item.imageUrl ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center">
+                                                <Shirt size={20} className="text-muted-foreground/40" />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-medium truncate">{item.name}</p>
+                                            <Badge variant="outline" className="text-[10px] capitalize flex-shrink-0">
+                                                {item.category}
+                                            </Badge>
+                                        </div>
+
+                                        {/* AI tags */}
+                                        <div className="mt-1.5 flex flex-wrap gap-1">
+                                            {ai?.tags?.slice(0, 5).map((tag) => (
+                                                <Badge key={tag.id} variant="secondary" className="text-[10px]">
+                                                    {tag.label}
+                                                </Badge>
+                                            ))}
+                                            {ai?.material && (
+                                                <Badge variant="secondary" className="text-[10px]">{ai.material}</Badge>
+                                            )}
+                                            {ai?.pattern && (
+                                                <Badge variant="secondary" className="text-[10px]">{ai.pattern}</Badge>
+                                            )}
+                                        </div>
+
+                                        {/* Corrections */}
+                                        {review?.corrections && (
+                                            <div className="mt-1 flex flex-wrap gap-1">
+                                                <span className="text-[10px] text-amber-600">Düzeltmeler:</span>
+                                                {Object.entries(review.corrections).map(([k, v]) => (
+                                                    <Badge key={k} className="text-[10px] bg-amber-500/15 text-amber-700 border-0">
+                                                        {k}: {v}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="mt-1 flex items-center gap-3">
+                                            {confidencePct !== null && (
+                                                <p className={`text-xs ${isLow ? "text-amber-500" : "text-muted-foreground"}`}>
+                                                    {isLow && <AlertTriangle size={10} className="inline mr-0.5" />}
+                                                    Güven: <span className="font-medium">{confidencePct}%</span>
+                                                </p>
+                                            )}
+                                            {statusInfo && (
+                                                <Badge className={statusInfo.className + " text-[10px]"}>
+                                                    {statusInfo.label}
+                                                </Badge>
+                                            )}
+                                            {review?.notes && (
+                                                <p className="text-xs text-muted-foreground italic truncate max-w-xs">
+                                                    "{review.notes}"
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex flex-shrink-0 gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-1 border-green-500/40 text-green-600 hover:bg-green-50/10"
+                                            disabled={isPending}
+                                            onClick={() => handleApprove(item.id)}
+                                        >
+                                            <CheckCircle size={12} />
+                                            Onayla
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-1 border-amber-500/40 text-amber-600 hover:bg-amber-50/10"
+                                            disabled={isPending}
+                                            onClick={() => openCorrect(item.id)}
+                                        >
+                                            <PencilLine size={12} />
+                                            Düzelt
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/5"
+                                            disabled={isPending}
+                                            onClick={() => openReject(item.id)}
+                                        >
+                                            <XCircle size={12} />
+                                            Reddet
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* ── Correct Modal ── */}
+            <Dialog open={modalMode === "correct"} onOpenChange={(o) => !o && setModalMode(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>AI Etiketini Düzelt</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <p className="text-xs text-muted-foreground">
+                            Boş bırakılan alanlar güncellenmez.
+                        </p>
+                        {(["color", "material", "pattern", "category"] as const).map((field) => (
+                            <div key={field}>
+                                <Label htmlFor={`correct-${field}`} className="capitalize text-xs">
+                                    {field === "color" ? "Renk" : field === "material" ? "Materyal" : field === "pattern" ? "Desen" : "Kategori"}
+                                </Label>
+                                <Input
+                                    id={`correct-${field}`}
+                                    value={correctForm[field]}
+                                    onChange={(e) => setCorrectForm((p) => ({ ...p, [field]: e.target.value }))}
+                                    placeholder={`Doğru ${field === "color" ? "renk" : field === "material" ? "materyal" : field === "pattern" ? "desen" : "kategori"}...`}
+                                    className="mt-1 text-sm"
+                                />
+                            </div>
+                        ))}
+                        <div>
+                            <Label htmlFor="correct-notes" className="text-xs">Not (opsiyonel)</Label>
+                            <Input
+                                id="correct-notes"
+                                value={correctForm.notes}
+                                onChange={(e) => setCorrectForm((p) => ({ ...p, notes: e.target.value }))}
+                                placeholder="Düzeltme notu..."
+                                className="mt-1 text-sm"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setModalMode(null)}>İptal</Button>
+                        <Button onClick={handleCorrectSubmit} disabled={isPending}>
+                            {isPending ? "Kaydediliyor..." : "Kaydet"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* ── Reject Modal ── */}
+            <Dialog open={modalMode === "reject"} onOpenChange={(o) => !o && setModalMode(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>AI Etiketini Reddet</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3 py-2">
+                        <p className="text-sm text-muted-foreground">
+                            Neden reddediyorsunuz? Bu not admin kaydına yazılır.
+                        </p>
+                        <div>
+                            <Label htmlFor="reject-notes" className="text-xs">Sebep</Label>
+                            <textarea
+                                id="reject-notes"
+                                value={rejectNotes}
+                                onChange={(e) => setRejectNotes(e.target.value)}
+                                placeholder="Yanlış kategori, renk tespiti hatalı, vs..."
+                                rows={3}
+                                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setModalMode(null)}>İptal</Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleRejectSubmit}
+                            disabled={isPending || !rejectNotes.trim()}
+                        >
+                            {isPending ? "Kaydediliyor..." : "Reddet"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
+
+// ── Mock flagged posts — forum moderation Hafta 9'da yapılacak ────────────────
 
 const MOCK_FLAGGED_POSTS = [
     { id: "p1", author: "Anonymous", title: "Selling branded items — best prices!", reason: "Spam / commercial", time: "3h ago" },
     { id: "p2", author: "User123", title: "Is this design stolen from Zara?", reason: "IP concern", time: "1d ago" },
 ];
 
+// ── Main page ─────────────────────────────────────────────────────────────────
+
 export default function AdminPage() {
-    const [userSearch, setUserSearch] = useState("");
-    const [approvedItems, setApprovedItems] = useState<Set<string>>(new Set());
-    const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set());
-
-    const filteredUsers = MOCK_USERS.filter(
-        (u) =>
-            u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-            u.email.toLowerCase().includes(userSearch.toLowerCase())
-    );
-
-    const stats = [
-        { label: "Total Users", value: MOCK_USERS.length, icon: Users },
-        { label: "AI Tag Queue", value: MOCK_AI_QUEUE.length, icon: Sparkles },
-        { label: "Flagged Posts", value: MOCK_FLAGGED_POSTS.length, icon: Flag },
-        { label: "Total Items", value: MOCK_USERS.reduce((s, u) => s + u.wardrobeCount, 0), icon: Shirt },
-    ];
-
     return (
         <DashboardLayout>
             <div className="space-y-8">
@@ -73,35 +449,8 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    {stats.map((stat, i) => {
-                        const Icon = stat.icon;
-                        return (
-                            <motion.div
-                                key={stat.label}
-                                initial={{ opacity: 0, y: 16 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.07 }}
-                            >
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-xs text-muted-foreground font-normal uppercase tracking-wide">
-                                            {stat.label}
-                                        </CardTitle>
-                                        <Icon size={15} className="text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <span className="text-3xl font-light">{stat.value}</span>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-
                 {/* Tabs */}
-                <Tabs defaultValue="users">
+                <Tabs defaultValue="ai-tags">
                     <TabsList>
                         <TabsTrigger value="users">Users</TabsTrigger>
                         <TabsTrigger value="ai-tags">AI Tag Validation</TabsTrigger>
@@ -110,127 +459,28 @@ export default function AdminPage() {
 
                     {/* ── Users tab ── */}
                     <TabsContent value="users" className="mt-6">
-                        <div className="space-y-4">
-                            <div className="relative max-w-sm">
-                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search users..."
-                                    value={userSearch}
-                                    onChange={(e) => setUserSearch(e.target.value)}
-                                    className="pl-9 text-sm"
-                                />
-                            </div>
-                            <div className="rounded-xl border border-border overflow-hidden">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-muted/50 text-xs text-muted-foreground uppercase tracking-wide">
-                                        <tr>
-                                            <th className="text-left px-5 py-3">User</th>
-                                            <th className="text-left px-5 py-3">Role</th>
-                                            <th className="text-right px-5 py-3">Items</th>
-                                            <th className="text-right px-5 py-3">Outfits</th>
-                                            <th className="px-5 py-3" />
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {filteredUsers.map((user) => (
-                                            <tr key={user.uid} className="hover:bg-muted/30 transition-colors">
-                                                <td className="px-5 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                                                {user.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <p className="font-medium">{user.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-5 py-3">
-                                                    <Badge
-                                                        variant={user.role === "stylist" ? "default" : "secondary"}
-                                                        className="capitalize text-xs"
-                                                    >
-                                                        {user.role}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-5 py-3 text-right">{user.wardrobeCount}</td>
-                                                <td className="px-5 py-3 text-right">{user.outfitCount}</td>
-                                                <td className="px-5 py-3 text-right">
-                                                    <Button variant="ghost" size="sm" className="text-xs">
-                                                        View
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <Card className="border-dashed">
+                            <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+                                <Users size={32} className="text-muted-foreground/40" />
+                                <div>
+                                    <p className="font-medium">Kullanıcı Yönetimi</p>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Tüm kullanıcıları listeleyin, rollerini değiştirin ve hesapları yönetin.
+                                    </p>
+                                </div>
+                                <Link href="/admin/users">
+                                    <Button className="gap-2">
+                                        Kullanıcı Yönetimine Git
+                                        <ArrowRight size={15} />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     {/* ── AI Tag Validation tab ── */}
                     <TabsContent value="ai-tags" className="mt-6">
-                        <div className="space-y-4">
-                            {MOCK_AI_QUEUE.map((qi) => {
-                                const approved = approvedItems.has(qi.id);
-                                const rejected = rejectedItems.has(qi.id);
-                                return (
-                                    <Card
-                                        key={qi.id}
-                                        className={`transition-all ${approved ? "border-green-500/30 bg-green-50/5" : rejected ? "border-destructive/30 bg-destructive/5" : ""}`}
-                                    >
-                                        <CardContent className="flex items-center gap-5 py-5">
-                                            <div className="h-16 w-16 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center">
-                                                <Shirt size={24} className="text-muted-foreground/40" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium">{qi.user}</p>
-                                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                                    {qi.tags.map((tag) => (
-                                                        <Badge key={tag} variant="secondary" className="text-[10px] capitalize">
-                                                            {tag}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                                <p className="text-xs text-muted-foreground mt-1.5">
-                                                    AI confidence: <span className="font-medium text-accent">{qi.confidence}%</span>
-                                                </p>
-                                            </div>
-                                            <div className="flex gap-2 flex-shrink-0">
-                                                {!approved && !rejected ? (
-                                                    <>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="border-green-500/40 text-green-600 hover:bg-green-50/10 gap-1"
-                                                            onClick={() => setApprovedItems((p) => new Set([...p, qi.id]))}
-                                                        >
-                                                            <CheckCircle size={13} />
-                                                            Approve
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="border-destructive/40 text-destructive hover:bg-destructive/5 gap-1"
-                                                            onClick={() => setRejectedItems((p) => new Set([...p, qi.id]))}
-                                                        >
-                                                            <XCircle size={13} />
-                                                            Reject
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <Badge className={approved ? "bg-green-500/20 text-green-600 border-0" : "bg-destructive/20 text-destructive border-0"}>
-                                                        {approved ? "Approved" : "Rejected"}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
+                        <AITagValidationTab />
                     </TabsContent>
 
                     {/* ── Moderation tab ── */}
@@ -252,12 +502,8 @@ export default function AdminPage() {
                                             </p>
                                         </div>
                                         <div className="flex gap-2 flex-shrink-0">
-                                            <Button size="sm" variant="outline" className="text-xs">
-                                                Remove
-                                            </Button>
-                                            <Button size="sm" variant="ghost" className="text-xs">
-                                                Dismiss
-                                            </Button>
+                                            <Button size="sm" variant="outline" className="text-xs">Remove</Button>
+                                            <Button size="sm" variant="ghost" className="text-xs">Dismiss</Button>
                                         </div>
                                     </CardContent>
                                 </Card>

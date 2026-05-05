@@ -1,27 +1,62 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const SESSION_COOKIE = "vesto_session";
+
+interface SessionPayload {
+    uid: string;
+    role: "user" | "stylist" | "admin";
+}
+
+// HTTP-only cookie'yi parse eder.
+// Bu cookie sadece server (API route) tarafından set edildiği için
+// browser JS ile manipüle edilemez — içeriğine güvenilebilir.
+function parseSession(raw: string): SessionPayload | null {
+    try {
+        return JSON.parse(Buffer.from(raw, "base64").toString()) as SessionPayload;
+    } catch {
+        return null;
+    }
+}
+
 export function middleware(request: NextRequest) {
-    const authCookie = request.cookies.get("vesto_auth")?.value;
-    const roleCookie = request.cookies.get("vesto_role")?.value;
+    const { pathname } = request.nextUrl;
 
-    const isAuthPage = request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/register");
-    const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/admin");
+    const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
+    const isDashboardPage = pathname.startsWith("/dashboard");
+    const isAdminPage = pathname.startsWith("/admin");
 
-    // Eğer giriş yapmamışsa ve dashboard/admin rotalarına girmeye çalışıyorsa login sayfasına at
-    if (!authCookie && isDashboardPage) {
+    const raw = request.cookies.get(SESSION_COOKIE)?.value;
+    const session = raw ? parseSession(raw) : null;
+
+    // Giriş yapmamış kullanıcı korumalı sayfaya erişmeye çalışıyor
+    if (!session && (isDashboardPage || isAdminPage)) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // Eğer giriş yapmış bir stylist/admin ise ve tekrar login/register sayfasına girmeye çalışıyorsa dashboard'a gönder
-    if (authCookie && (roleCookie === "stylist" || roleCookie === "admin") && isAuthPage) {
+    // /admin sadece admin rolüne açık
+    if (session && isAdminPage && session.role !== "admin") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // /dashboard/clients sadece stylist ve admin'e açık
+    if (
+        session &&
+        pathname.startsWith("/dashboard/clients") &&
+        session.role !== "stylist" &&
+        session.role !== "admin"
+    ) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // Giriş yapmış kullanıcı auth sayfasına gitmeye çalışıyor
+    if (session && isAuthPage) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return NextResponse.next();
 }
 
-// Sadece bu rotalarda tetiklensin
 export const config = {
     matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register"],
 };
