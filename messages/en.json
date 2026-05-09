@@ -1,0 +1,459 @@
+{
+    "common": {
+        "appName": "Vesto AI",
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "search": "Search",
+        "add": "Add",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "confirm": "Confirm",
+        "error": "Error",
+        "success": "Success"
+    },
+    "auth": {
+        "login": "Log In",
+        "logout": "Log Out",
+        "register": "Sign Up",
+        "email": "Email",
+        "emailPlaceholder": "you@example.com",
+        "password": "Password",
+        "passwordPlaceholder": "••••••••",
+        "passwordMinPlaceholder": "Min. 8 characters",
+        "fullName": "Full name",
+        "namePlaceholder": "Your name",
+        "forgotPassword": "Forgot Password",
+        "loginHeading": "Welcome back.",
+        "loginSubheading": "Sign in to your Vesto account.",
+        "loginButton": "Sign In",
+        "loggingIn": "Signing in...",
+        "loginFailed": "Login failed.",
+        "noAccount": "Don't have an account?",
+        "createOne": "Create one",
+        "registerHeading": "Create your wardrobe.",
+        "registerSubheading": "Start your AI-powered fashion journey.",
+        "createAccount": "Create account",
+        "creatingAccount": "Creating account...",
+        "registerFailed": "Registration failed.",
+        "googleFailed": "Google sign-in failed.",
+        "orSeparator": "or",
+        "continueWithGoogle": "Continue with Google",
+        "hasAccount": "Already have an account?",
+        "signIn": "Sign in"
+    },
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "wardrobe": "Wardrobe",
+        "canvas": "Outfit Editor",
+        "community": "Community",
+        "clients": "Clients",
+        "settings": "Settings",
+        "admin": "Admin",
+        "adminUsers": "User Management"
+    },
+    "dashboard": {
+        "overview": {
+            "title": "Overview",
+            "subtitle": "Monitor all platform activity and key metrics from here."
+        },
+        "stats": {
+            "totalUsers": "Total Users",
+            "newClothes": "New Clothing Uploads",
+            "pendingRequests": "Pending Outfit Requests",
+            "activeStylists": "Active Stylists",
+            "thisMonth": "this month",
+            "noChange": "No change"
+        },
+        "activity": {
+            "title": "Recent Activities",
+            "columns": {
+                "user": "Username",
+                "action": "Action Type",
+                "date": "Date"
+            },
+            "badge": {
+                "new": "New",
+                "aiReview": "AI Review"
+            },
+            "actions": {
+                "addedWardrobe": "Added a new capsule wardrobe",
+                "requestedOutfit": "Requested an outfit suggestion",
+                "aiColorPending": "AI color detection pending review",
+                "sharedPost": "Shared a post in community forum",
+                "uploadedCatalog": "Uploaded a new clothing catalog"
+            },
+            "dates": {
+                "min10": "10 min ago",
+                "min45": "45 min ago",
+                "hour2": "2 hours ago",
+                "hour4": "4 hours ago",
+                "hour5": "5 hours ago"
+            }
+        }
+    },
+    "wardrobe": {
+        "title": "Wardrobe",
+        "addItem": "Add Item",
+        "searchPlaceholder": "Search items...",
+        "noItems": "No items found.",
+        "addFirstItem": "Add your first item",
+        "itemCount": "{count, plural, =0 {no items in your collection} =1 {1 item in your collection} other {# items in your collection}}",
+        "aiTagged": "AI tagged",
+        "categories": {
+            "all": "All",
+            "tops": "Tops",
+            "bottoms": "Bottoms",
+            "dresses": "Dresses",
+            "outerwear": "Outerwear",
+            "shoes": "Shoes",
+            "accessories": "Accessories",
+            "bags": "Bags"
+        },
+        "upload": {
+            "title": "Add Clothing Item",
+            "dropzone": "Drop your photo here, or click to browse",
+            "aiTag": "AI will auto-analyze colors & category",
+            "itemName": "Item Name",
+            "itemNamePlaceholder": "e.g. White linen shirt",
+            "analyzeButton": "Analyze & Add to Wardrobe"
+        }
+    },
+    "canvas": {
+        "title": "Stylist Canvas",
+        "subtitle": "Drag items to build your outfit",
+        "save": "Save Outfit",
+        "clear": "Clear",
+        "wardrobePanel": "Wardrobe",
+        "searchPlaceholder": "Search wardrobe...",
+        "noItems": "No items found.",
+        "canvasEmpty": "Drag clothing items here to build your outfit",
+        "itemCount": "{count, plural, =0 {0 items} =1 {1 item} other {# items}}",
+        "savedToast": "Outfit saved! #{id}",
+        "occasions": {
+            "casual": "Casual",
+            "formal": "Formal",
+            "business": "Business",
+            "sporty": "Sporty",
+            "evening": "Evening",
+            "beach": "Beach"
+        },
+        "seasons": {
+            "spring": "Spring",
+            "summer": "Summer",
+            "fall": "Fall",
+            "winter": "Winter"
+        },
+        "saveModal": {
+            "title": "Save Outfit",
+            "name": "Outfit Name",
+            "nameRequired": "Outfit name is required.",
+            "namePlaceholder": "Summer outfit, Business meeting...",
+            "description": "Description (optional)",
+            "descriptionPlaceholder": "Notes about this outfit...",
+            "occasion": "Occasion (optional)",
+            "season": "Season (optional)",
+            "visibility": "Visibility",
+            "visibilityPrivate": "Private",
+            "visibilityPublic": "Public",
+            "visibilityFollowers": "Followers",
+            "summary": "{count, plural, =1 {1 item} other {# items}} will be saved",
+            "saving": "Saving...",
+            "saveButton": "Save",
+            "itemsRequired": "Add at least one item.",
+            "saveError": "Error while saving."
+        }
+    },
+    "community": {
+        "title": "Community",
+        "subtitle": "Discover fashion insights, tips, and conversations.",
+        "newPost": "New post",
+        "searchPlaceholder": "Search posts or tags...",
+        "trendingTopics": "Trending topics",
+        "share": "Share",
+        "roles": {
+            "certifiedStylist": "Certified Stylist",
+            "stylist": "Stylist",
+            "user": "User"
+        }
+    },
+    "admin": {
+        "title": "Admin Panel",
+        "subtitle": "Platform management & AI validation",
+        "tabs": {
+            "users": "Users",
+            "aiTags": "AI Tag Validation",
+            "moderation": "Forum Moderation"
+        },
+        "users": {
+            "heading": "User Management",
+            "description": "List all users, change their roles, and manage accounts.",
+            "goButton": "Go to User Management"
+        },
+        "aiQueue": {
+            "filters": {
+                "all": "All",
+                "pending": "Pending",
+                "approved": "Approved",
+                "corrected": "Corrected",
+                "rejected": "Rejected"
+            },
+            "lowConfidence": "Low confidence (<70%)",
+            "itemCount": "{count} items",
+            "loading": "Loading...",
+            "emptyPending": "No pending AI tags.",
+            "emptyFilter": "No items found for this filter.",
+            "confidence": "Confidence:",
+            "corrections": "Corrections:",
+            "statusBadge": {
+                "approved": "Approved",
+                "rejected": "Rejected",
+                "corrected": "Corrected"
+            },
+            "actions": {
+                "approve": "Approve",
+                "correct": "Correct",
+                "reject": "Reject"
+            },
+            "toast": {
+                "approved": "✓ Approved",
+                "rejected": "✓ Rejected",
+                "corrected": "✓ Correction saved",
+                "error": "Error: {message}"
+            }
+        },
+        "correctModal": {
+            "title": "Correct AI Tag",
+            "hint": "Empty fields will not be updated.",
+            "fields": {
+                "color": "Color",
+                "material": "Material",
+                "pattern": "Pattern",
+                "category": "Category"
+            },
+            "placeholders": {
+                "color": "Correct color...",
+                "material": "Correct material...",
+                "pattern": "Correct pattern...",
+                "category": "Correct category..."
+            },
+            "notes": "Note (optional)",
+            "notesPlaceholder": "Correction note...",
+            "saving": "Saving...",
+            "save": "Save"
+        },
+        "rejectModal": {
+            "title": "Reject AI Tag",
+            "description": "Why are you rejecting this? The note is saved to the admin record.",
+            "reason": "Reason",
+            "reasonPlaceholder": "Wrong category, incorrect color detection, etc...",
+            "saving": "Saving...",
+            "reject": "Reject"
+        },
+        "moderation": {
+            "remove": "Remove",
+            "dismiss": "Dismiss"
+        }
+    },
+    "adminUsers": {
+        "title": "User Management",
+        "subtitle": "Manage all registered users and their roles",
+        "backToAdmin": "Admin Panel",
+        "searchPlaceholder": "Search by name or email...",
+        "notFound": "No users found.",
+        "stats": {
+            "total": "Total",
+            "users": "Users",
+            "stylists": "Stylists",
+            "suspended": "Suspended"
+        },
+        "roleFilters": {
+            "all": "All",
+            "user": "Users",
+            "stylist": "Stylists",
+            "admin": "Admins"
+        },
+        "roleLabels": {
+            "user": "User",
+            "stylist": "Stylist",
+            "admin": "Admin"
+        },
+        "statusLabels": {
+            "active": "Active",
+            "suspended": "Suspended"
+        },
+        "table": {
+            "user": "User",
+            "role": "Role",
+            "status": "Status",
+            "wardrobe": "Wardrobe",
+            "outfit": "Outfits",
+            "lastActive": "Last Active",
+            "detail": "Detail"
+        },
+        "timeAgo": {
+            "minutes": "{count}m ago",
+            "hours": "{count}h ago",
+            "days": "{count}d ago"
+        },
+        "detail": {
+            "backToList": "User List",
+            "joinedAt": "Joined:",
+            "lastActive": "Last active:",
+            "stats": {
+                "wardrobe": "Wardrobe",
+                "outfit": "Outfits",
+                "followers": "Followers",
+                "following": "Following"
+            },
+            "adminActions": "Admin Actions",
+            "role": "Role",
+            "assignedStylist": "Assigned Stylist",
+            "noStylist": "— No stylist selected —",
+            "currentStylist": "Current: {name}",
+            "accountStatus": "Account Status",
+            "suspend": "Suspend Account",
+            "activate": "Activate Account",
+            "confirmSuspend": "Account will be suspended. Are you sure?",
+            "confirmActivate": "Account will be reactivated. Are you sure?",
+            "confirmYes": "Yes, continue",
+            "stylePreferences": "Style Preferences"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "sections": {
+            "language": "Language",
+            "appearance": "Appearance",
+            "profile": "Profile",
+            "notifications": "Notifications"
+        },
+        "language": {
+            "heading": "Language",
+            "description": "Choose your preferred interface language.",
+            "turkish": "Türkçe",
+            "english": "English",
+            "current": "Current language:"
+        },
+        "appearance": {
+            "heading": "Appearance",
+            "description": "Manage your theme preferences.",
+            "darkMode": "Dark mode",
+            "darkModeDesc": "Switch the interface to dark theme."
+        },
+        "profile": {
+            "heading": "Profile",
+            "description": "Update your profile information such as name and bio.",
+            "comingSoon": "Coming soon"
+        },
+        "notifications": {
+            "heading": "Notifications",
+            "description": "Manage email and in-app notifications.",
+            "comingSoon": "Coming soon"
+        }
+    },
+    "clients": {
+        "title": "My Clients",
+        "subtitle": "Users assigned to you and their wardrobes",
+        "stats": {
+            "totalClients": "Total Clients",
+            "totalWardrobe": "Total Clothing",
+            "totalOutfits": "Total Outfits"
+        },
+        "searchPlaceholder": "Search clients...",
+        "noResults": "No results found.",
+        "noClients": "No clients assigned yet.",
+        "viewProfile": "View Profile",
+        "statusLabels": {
+            "active": "Active",
+            "suspended": "Suspended"
+        },
+        "itemCounts": {
+            "wardrobe": "{count} items",
+            "outfits": "{count} outfits"
+        },
+        "detail": {
+            "backToList": "My Clients",
+            "notFound": "Client not found.",
+            "goBack": "Go back",
+            "joinedAt": "Joined:",
+            "lastActive": "Last active:",
+            "stats": {
+                "wardrobe": "Wardrobe",
+                "outfit": "Outfits",
+                "followers": "Followers",
+                "following": "Following"
+            },
+            "stylePreferences": "Style Preferences",
+            "quickActions": "Quick Actions",
+            "viewWardrobe": "View Wardrobe",
+            "createOutfit": "Create Outfit"
+        }
+    },
+    "outfits": {
+        "title": "Outfit Suggestions",
+        "subtitle": "AI-curated looks tailored to today's weather & your style.",
+        "weather": {
+            "feelsLike": "Feels like",
+            "humidity": "humidity",
+            "unavailable": "Weather unavailable — add your OpenWeather API key to enable smart suggestions."
+        },
+        "aiMatched": "AI matched",
+        "styleScore": "Style score",
+        "wearThis": "Wear this"
+    },
+    "landing": {
+        "badge": "AI-Powered Fashion Platform",
+        "heroTitle1": "Your wardrobe,",
+        "heroTitleHighlight": "reimagined",
+        "heroTitle2": "by artificial intelligence.",
+        "heroSubtitle": "Digitize every piece in your closet. Let AI analyze your style, suggest weather-perfect outfits, and connect you with professional stylists — all in one elegant platform.",
+        "startFree": "Start for free",
+        "viewDemo": "View demo",
+        "featuresTitle1": "Fashion intelligence,",
+        "featuresTitleHighlight": "built for you.",
+        "featuresSubtitle": "From your closet to curated looks — Vesto handles every step with precision and elegance.",
+        "ctaTitle1": "Begin your",
+        "ctaTitleHighlight": "digital wardrobe",
+        "ctaTitle2": "today.",
+        "ctaSubtitle": "Join thousands of fashion-forward individuals who let Vesto manage their style.",
+        "ctaButton": "Create your account",
+        "footerRights": "© 2026 Vesto AI. All rights reserved.",
+        "footerPrivacy": "Privacy",
+        "footerTerms": "Terms",
+        "features": {
+            "aiWardrobe": {
+                "title": "AI Wardrobe Analysis",
+                "description": "Computer Vision automatically detects colors, patterns, and categories from your clothing photos."
+            },
+            "weatherOutfits": {
+                "title": "Weather-Smart Outfits",
+                "description": "Get daily outfit suggestions tailored to your local weather and your personal style preferences."
+            },
+            "stylistCommunity": {
+                "title": "Stylist Community",
+                "description": "Connect with certified stylists who craft personalized looks directly from your wardrobe inventory."
+            },
+            "canvas": {
+                "title": "Stylist Canvas",
+                "description": "Drag-and-drop outfit builder that lets you — or your stylist — mix and match pieces visually."
+            }
+        }
+    },
+    "errors": {
+        "notFound": "Page not found",
+        "unauthorized": "Unauthorized access",
+        "serverError": "Server error",
+        "tryAgain": "Try again"
+    },
+    "toasts": {
+        "savedSuccess": "Saved successfully",
+        "deletedSuccess": "Deleted successfully",
+        "updateSuccess": "Updated successfully",
+        "loginSuccess": "Login successful",
+        "logoutSuccess": "Logged out"
+    }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useWardrobe } from "@/hooks/useWardrobe";
 import { useAuth } from "@/hooks/useAuth";
@@ -69,6 +70,7 @@ function CanvasZone({
     canvasItems: CanvasItem[];
     onRemove: (id: string) => void;
 }) {
+    const t = useTranslations("canvas");
     const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
 
     return (
@@ -81,9 +83,7 @@ function CanvasZone({
             {canvasItems.length === 0 && !isOver && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                     <Sparkles size={32} className="text-muted-foreground/30 mb-3" />
-                    <p className="text-muted-foreground text-sm">
-                        Drag clothing items here to build your outfit
-                    </p>
+                    <p className="text-muted-foreground text-sm">{t("canvasEmpty")}</p>
                 </div>
             )}
             {canvasItems.map((ci) => (
@@ -112,21 +112,8 @@ function CanvasZone({
 
 // ── Save Modal ────────────────────────────────────────────────────────────────
 
-const OCCASIONS: { value: OccasionTag; label: string }[] = [
-    { value: "casual", label: "Günlük" },
-    { value: "formal", label: "Resmi" },
-    { value: "business", label: "İş" },
-    { value: "sporty", label: "Spor" },
-    { value: "evening", label: "Gece" },
-    { value: "beach", label: "Plaj" },
-];
-
-const SEASONS: { value: OutfitSeason; label: string }[] = [
-    { value: "spring", label: "İlkbahar" },
-    { value: "summer", label: "Yaz" },
-    { value: "fall", label: "Sonbahar" },
-    { value: "winter", label: "Kış" },
-];
+const OCCASION_VALUES: OccasionTag[] = ["casual", "formal", "business", "sporty", "evening", "beach"];
+const SEASON_VALUES: OutfitSeason[] = ["spring", "summer", "fall", "winter"];
 
 interface SaveModalProps {
     open: boolean;
@@ -137,6 +124,8 @@ interface SaveModalProps {
 
 function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
     const { vestoUser } = useAuth();
+    const t = useTranslations("canvas");
+    const tCommon = useTranslations("common");
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [occasion, setOccasion] = useState<OccasionTag | null>(null);
@@ -152,17 +141,10 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
     }
 
     function handleSubmit() {
-        if (!name.trim()) {
-            setError("Kombin adı zorunludur.");
-            return;
-        }
-        if (canvasItems.length === 0) {
-            setError("En az bir parça eklemelisiniz.");
-            return;
-        }
+        if (!name.trim()) { setError(t("saveModal.nameRequired")); return; }
+        if (canvasItems.length === 0) { setError(t("saveModal.itemsRequired")); return; }
         setError(null);
 
-        // Canvas'taki her item için layout + snapshot hazırla
         const canvasLayout: CanvasLayoutItem[] = canvasItems.map((ci, index) => ({
             itemId: ci.item.id,
             x: ci.x,
@@ -188,42 +170,46 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                 occasion,
                 season: seasons,
                 visibility,
-                // targetUserId: müşteri seçimi Hafta 10'da eklenecek
             });
 
             if (res.ok && res.outfitId) {
                 onSaved(res.outfitId);
                 onClose();
-                // Reset form
                 setName("");
                 setDescription("");
                 setOccasion(null);
                 setSeasons([]);
                 setVisibility("private");
             } else {
-                setError(res.error ?? "Kayıt sırasında hata oluştu.");
+                setError(res.error ?? t("saveModal.saveError"));
             }
         });
     }
+
+    const visibilityLabels: Record<OutfitVisibility, string> = {
+        private: t("saveModal.visibilityPrivate"),
+        public: t("saveModal.visibilityPublic"),
+        followers: t("saveModal.visibilityFollowers"),
+    };
 
     return (
         <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Kombini Kaydet</DialogTitle>
+                    <DialogTitle>{t("saveModal.title")}</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-5 py-2">
                     {/* Name */}
                     <div>
                         <Label htmlFor="outfit-name" className="text-xs">
-                            Kombin Adı <span className="text-destructive">*</span>
+                            {t("saveModal.name")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             id="outfit-name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Yaz kombini, İş toplantısı..."
+                            placeholder={t("saveModal.namePlaceholder")}
                             className="mt-1 text-sm"
                             autoFocus
                         />
@@ -231,12 +217,12 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
 
                     {/* Description */}
                     <div>
-                        <Label htmlFor="outfit-desc" className="text-xs">Açıklama (opsiyonel)</Label>
+                        <Label htmlFor="outfit-desc" className="text-xs">{t("saveModal.description")}</Label>
                         <textarea
                             id="outfit-desc"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Bu kombinle ilgili notlar..."
+                            placeholder={t("saveModal.descriptionPlaceholder")}
                             rows={2}
                             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
                         />
@@ -244,20 +230,20 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
 
                     {/* Occasion */}
                     <div>
-                        <Label className="text-xs">Vesile (opsiyonel)</Label>
+                        <Label className="text-xs">{t("saveModal.occasion")}</Label>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
-                            {OCCASIONS.map((o) => (
+                            {OCCASION_VALUES.map((value) => (
                                 <button
-                                    key={o.value}
+                                    key={value}
                                     type="button"
-                                    onClick={() => setOccasion(occasion === o.value ? null : o.value)}
+                                    onClick={() => setOccasion(occasion === value ? null : value)}
                                     className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                                        occasion === o.value
+                                        occasion === value
                                             ? "border-primary bg-primary text-primary-foreground"
                                             : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                                     }`}
                                 >
-                                    {o.label}
+                                    {t(`occasions.${value}` as Parameters<typeof t>[0])}
                                 </button>
                             ))}
                         </div>
@@ -265,20 +251,20 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
 
                     {/* Season */}
                     <div>
-                        <Label className="text-xs">Sezon (opsiyonel)</Label>
+                        <Label className="text-xs">{t("saveModal.season")}</Label>
                         <div className="mt-1.5 flex gap-1.5">
-                            {SEASONS.map((s) => (
+                            {SEASON_VALUES.map((value) => (
                                 <button
-                                    key={s.value}
+                                    key={value}
                                     type="button"
-                                    onClick={() => toggleSeason(s.value)}
+                                    onClick={() => toggleSeason(value)}
                                     className={`flex-1 rounded-full border py-1 text-xs transition-colors ${
-                                        seasons.includes(s.value)
+                                        seasons.includes(value)
                                             ? "border-primary bg-primary text-primary-foreground"
                                             : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                                     }`}
                                 >
-                                    {s.label}
+                                    {t(`seasons.${value}` as Parameters<typeof t>[0])}
                                 </button>
                             ))}
                         </div>
@@ -286,7 +272,7 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
 
                     {/* Visibility */}
                     <div>
-                        <Label className="text-xs">Görünürlük</Label>
+                        <Label className="text-xs">{t("saveModal.visibility")}</Label>
                         <div className="mt-1.5 flex gap-3">
                             {(["private", "public", "followers"] as OutfitVisibility[]).map((v) => (
                                 <label key={v} className="flex cursor-pointer items-center gap-1.5 text-xs">
@@ -298,7 +284,7 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                                         onChange={() => setVisibility(v)}
                                         className="accent-primary"
                                     />
-                                    {v === "private" ? "Gizli" : v === "public" ? "Herkese açık" : "Takipçiler"}
+                                    {visibilityLabels[v]}
                                 </label>
                             ))}
                         </div>
@@ -307,22 +293,22 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                     {/* Summary */}
                     <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
                         <p className="text-xs text-muted-foreground">
-                            <span className="font-medium text-foreground">{canvasItems.length} parça</span> kaydedilecek
-                            {vestoUser?.role === "admin" || vestoUser?.role === "stylist"
-                                ? " — stilist kombinleri müşterilere öneri olarak gönderilecek (Hafta 10)"
-                                : ""}
+                            <span className="font-medium text-foreground">
+                                {t("saveModal.summary", { count: canvasItems.length })}
+                            </span>
+                            {(vestoUser?.role === "admin" || vestoUser?.role === "stylist") && " — Week 10"}
                         </p>
                     </div>
 
-                    {error && (
-                        <p className="text-xs text-destructive">{error}</p>
-                    )}
+                    {error && <p className="text-xs text-destructive">{error}</p>}
                 </div>
 
                 <DialogFooter>
-                    <Button variant="ghost" onClick={onClose} disabled={isPending}>İptal</Button>
+                    <Button variant="ghost" onClick={onClose} disabled={isPending}>
+                        {tCommon("cancel")}
+                    </Button>
                     <Button onClick={handleSubmit} disabled={isPending || canvasItems.length === 0}>
-                        {isPending ? "Kaydediliyor..." : "Kaydet"}
+                        {isPending ? t("saveModal.saving") : t("saveModal.saveButton")}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -334,6 +320,7 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
 
 export default function CanvasPage() {
     const { items, loading } = useWardrobe();
+    const t = useTranslations("canvas");
     const [canvasItems, setCanvasItems] = useState<CanvasItem[]>([]);
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [search, setSearch] = useState("");
@@ -367,7 +354,7 @@ export default function CanvasPage() {
 
     function handleSaved(outfitId: string) {
         setCanvasItems([]);
-        setSavedToast(`Kombin kaydedildi! #${outfitId.slice(0, 8)}`);
+        setSavedToast(t("savedToast", { id: outfitId.slice(0, 8) }));
         setTimeout(() => setSavedToast(null), 4000);
     }
 
@@ -394,16 +381,14 @@ export default function CanvasPage() {
                     {/* Left — item picker */}
                     <aside className="flex w-64 flex-shrink-0 flex-col gap-4">
                         <div>
-                            <h2 className="text-xl font-light mb-1">Stylist Canvas</h2>
-                            <p className="text-xs text-muted-foreground">
-                                Drag items to build your outfit
-                            </p>
+                            <h2 className="text-xl font-light mb-1">{t("title")}</h2>
+                            <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
                         </div>
 
                         <div className="relative">
                             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                             <Input
-                                placeholder="Search wardrobe..."
+                                placeholder={t("searchPlaceholder")}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-8 text-sm"
@@ -419,7 +404,7 @@ export default function CanvasPage() {
                                 </div>
                             ) : filtered.length === 0 ? (
                                 <p className="text-center text-sm text-muted-foreground py-8">
-                                    No items found.
+                                    {t("noItems")}
                                 </p>
                             ) : (
                                 <div className="grid grid-cols-2 gap-2">
@@ -436,7 +421,7 @@ export default function CanvasPage() {
                         <div className="flex items-center gap-3">
                             <Badge variant="outline" className="gap-1 border-accent/30 text-accent text-xs">
                                 <Sparkles size={10} />
-                                {canvasItems.length} items
+                                {t("itemCount", { count: canvasItems.length })}
                             </Badge>
                             <Button
                                 size="sm"
@@ -445,7 +430,7 @@ export default function CanvasPage() {
                                 onClick={() => setSaveModalOpen(true)}
                             >
                                 <Save size={14} />
-                                Save outfit
+                                {t("save")}
                             </Button>
                             <Button
                                 variant="outline"
@@ -454,7 +439,7 @@ export default function CanvasPage() {
                                 onClick={() => setCanvasItems([])}
                             >
                                 <Trash2 size={14} className="mr-1.5" />
-                                Clear
+                                {t("clear")}
                             </Button>
                         </div>
                         <div className="flex-1">

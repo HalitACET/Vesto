@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import createIntlMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 
 const SESSION_COOKIE = "vesto_session";
 
@@ -8,9 +10,6 @@ interface SessionPayload {
     role: "user" | "stylist" | "admin";
 }
 
-// HTTP-only cookie'yi parse eder.
-// Bu cookie sadece server (API route) tarafından set edildiği için
-// browser JS ile manipüle edilemez — içeriğine güvenilebilir.
 function parseSession(raw: string): SessionPayload | null {
     try {
         return JSON.parse(Buffer.from(raw, "base64").toString()) as SessionPayload;
@@ -19,44 +18,65 @@ function parseSession(raw: string): SessionPayload | null {
     }
 }
 
+const intlMiddleware = createIntlMiddleware(routing);
+
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
-    const isDashboardPage = pathname.startsWith("/dashboard");
-    const isAdminPage = pathname.startsWith("/admin");
+    // Strip locale prefix to get the "real" path for auth checks
+    // e.g. /tr/dashboard → /dashboard, /en/login → /login
+    const localePattern = new RegExp(`^/(${routing.locales.join("|")})`);
+    const strippedPath = pathname.replace(localePattern, "") || "/";
+
+    const isAuthPage = strippedPath.startsWith("/login") || strippedPath.startsWith("/register");
+    const isDashboardPage = strippedPath.startsWith("/dashboard");
+    const isAdminPage = strippedPath.startsWith("/admin");
 
     const raw = request.cookies.get(SESSION_COOKIE)?.value;
     const session = raw ? parseSession(raw) : null;
 
-    // Giriş yapmamış kullanıcı korumalı sayfaya erişmeye çalışıyor
+    // Extract current locale from URL for redirect construction
+    const localeMatch = pathname.match(localePattern);
+    const currentLocale = localeMatch ? localeMatch[1] : routing.defaultLocale;
+
+    function redirectTo(path: string) {
+        return NextResponse.redirect(new URL(`/${currentLocale}${path}`, request.url));
+    }
+
+    // Unauthenticated user trying to access protected pages
     if (!session && (isDashboardPage || isAdminPage)) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        return redirectTo("/login");
     }
 
-    // /admin sadece admin rolüne açık
+    // /admin requires admin role
     if (session && isAdminPage && session.role !== "admin") {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return redirectTo("/dashboard");
     }
 
-    // /dashboard/clients sadece stylist ve admin'e açık
+    // /dashboard/clients requires stylist or admin
     if (
         session &&
-        pathname.startsWith("/dashboard/clients") &&
+        strippedPath.startsWith("/dashboard/clients") &&
         session.role !== "stylist" &&
         session.role !== "admin"
     ) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return redirectTo("/dashboard");
     }
 
-    // Giriş yapmış kullanıcı auth sayfasına gitmeye çalışıyor
+    // Authenticated user visiting auth pages → redirect to dashboard
     if (session && isAuthPage) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return redirectTo("/dashboard");
     }
 
-    return NextResponse.next();
+    // Let next-intl handle locale routing (prefix, detection, cookie)
+    return intlMiddleware(request);
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register"],
+    matcher: [
+        // Match locale-prefixed routes and root
+        "/(tr|en)/:path*",
+        // Also match non-prefixed routes so next-intl can redirect to locale prefix
+        "/((?!api|_next|_vercel|.*\\..*).*)",
+    ],
 };

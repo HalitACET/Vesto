@@ -1,8 +1,8 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,25 +29,6 @@ function getInitials(name: string) {
     return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
-function formatDate(iso?: string) {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleDateString("tr-TR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    });
-}
-
-function timeAgo(iso?: string) {
-    if (!iso) return "—";
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} dakika önce`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours} saat önce`;
-    return `${Math.floor(hours / 24)} gün önce`;
-}
-
 export default function ClientDetailPage({
     params,
 }: {
@@ -56,6 +37,8 @@ export default function ClientDetailPage({
     const { id } = use(params);
     const { vestoUser } = useAuth();
     const router = useRouter();
+    const t = useTranslations("clients");
+    const locale = useLocale();
 
     const [client, setClient] = useState<VestoUser | null>(null);
     const [loading, setLoading] = useState(true);
@@ -63,7 +46,6 @@ export default function ClientDetailPage({
     useEffect(() => {
         getUser(id)
             .then((u) => {
-                // Sadece bu stilistin müşterisi ise göster
                 if (u && vestoUser && u.assignedStylistId !== vestoUser.uid) {
                     router.replace("/dashboard/clients");
                     return;
@@ -72,6 +54,25 @@ export default function ClientDetailPage({
             })
             .finally(() => setLoading(false));
     }, [id, vestoUser, router]);
+
+    function formatDate(iso?: string) {
+        if (!iso) return "—";
+        return new Date(iso).toLocaleDateString(locale === "tr" ? "tr-TR" : "en-US", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+    }
+
+    function timeAgo(iso?: string) {
+        if (!iso) return "—";
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return `${mins}m`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `${hours}h`;
+        return `${Math.floor(hours / 24)}d`;
+    }
 
     if (loading) {
         return (
@@ -89,14 +90,21 @@ export default function ClientDetailPage({
         return (
             <DashboardLayout>
                 <div className="flex flex-col items-center justify-center py-32 gap-4">
-                    <p className="text-muted-foreground">Müşteri bulunamadı.</p>
+                    <p className="text-muted-foreground">{t("detail.notFound")}</p>
                     <Button variant="outline" onClick={() => router.push("/dashboard/clients")}>
-                        Geri dön
+                        {t("detail.goBack")}
                     </Button>
                 </div>
             </DashboardLayout>
         );
     }
+
+    const DETAIL_STATS = [
+        { key: "wardrobe", value: client.wardrobeCount ?? 0, icon: Shirt },
+        { key: "outfit", value: client.outfitCount ?? 0, icon: Palette },
+        { key: "followers", value: client.followersCount ?? 0, icon: Users },
+        { key: "following", value: client.followingCount ?? 0, icon: Users },
+    ] as const;
 
     return (
         <DashboardLayout>
@@ -107,7 +115,7 @@ export default function ClientDetailPage({
                     className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <ArrowLeft size={14} />
-                    Müşterilerim
+                    {t("detail.backToList")}
                 </Link>
 
                 {/* Profile */}
@@ -126,7 +134,7 @@ export default function ClientDetailPage({
                                         variant="outline"
                                         className={`text-xs ${client.status === "active" ? "border-green-500/40 text-green-600" : "border-destructive/40 text-destructive"}`}
                                     >
-                                        {client.status === "active" ? "Aktif" : "Askıda"}
+                                        {t(`statusLabels.${client.status}` as Parameters<typeof t>[0])}
                                     </Badge>
                                 </div>
                                 {client.bio && (
@@ -142,10 +150,10 @@ export default function ClientDetailPage({
                                         </span>
                                     )}
                                     <span className="flex items-center gap-1.5">
-                                        <Calendar size={12} /> Katılım: {formatDate(client.createdAt)}
+                                        <Calendar size={12} /> {t("detail.joinedAt")} {formatDate(client.createdAt)}
                                     </span>
                                     <span className="flex items-center gap-1.5">
-                                        <Clock size={12} /> Son aktif: {timeAgo(client.lastActive)}
+                                        <Clock size={12} /> {t("detail.lastActive")} {timeAgo(client.lastActive)}
                                     </span>
                                 </div>
                             </div>
@@ -160,18 +168,15 @@ export default function ClientDetailPage({
                     transition={{ delay: 0.07 }}
                     className="grid grid-cols-2 sm:grid-cols-4 gap-4"
                 >
-                    {[
-                        { label: "Gardırop", value: client.wardrobeCount ?? 0, icon: Shirt },
-                        { label: "Kombin", value: client.outfitCount ?? 0, icon: Palette },
-                        { label: "Takipçi", value: client.followersCount ?? 0, icon: Users },
-                        { label: "Takip", value: client.followingCount ?? 0, icon: Users },
-                    ].map((s) => {
+                    {DETAIL_STATS.map((s) => {
                         const Icon = s.icon;
                         return (
-                            <Card key={s.label}>
+                            <Card key={s.key}>
                                 <CardContent className="flex items-center justify-between py-4 px-5">
                                     <div>
-                                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t(`detail.stats.${s.key}` as Parameters<typeof t>[0])}
+                                        </p>
                                         <p className="text-2xl font-light mt-0.5">{s.value}</p>
                                     </div>
                                     <Icon size={16} className="text-muted-foreground" />
@@ -192,7 +197,7 @@ export default function ClientDetailPage({
                             <CardHeader>
                                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                                     <Sparkles size={14} className="text-accent" />
-                                    Stil Tercihleri
+                                    {t("detail.stylePreferences")}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -216,19 +221,19 @@ export default function ClientDetailPage({
                 >
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Hızlı İşlemler</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t("detail.quickActions")}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-3">
                             <Link href={`/dashboard/wardrobe?userId=${client.uid}`}>
                                 <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                                     <Shirt size={13} />
-                                    Gardırobu Görüntüle
+                                    {t("detail.viewWardrobe")}
                                 </Button>
                             </Link>
                             <Link href={`/dashboard/canvas?userId=${client.uid}`}>
                                 <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                                     <Palette size={13} />
-                                    Kombin Hazırla
+                                    {t("detail.createOutfit")}
                                 </Button>
                             </Link>
                         </CardContent>

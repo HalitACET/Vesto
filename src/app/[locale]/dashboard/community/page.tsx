@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, MessageCircle, Share2, Search, Plus, Pin } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Mock posts for community scaffold
+type PostRole = "certifiedStylist" | "stylist" | "user";
+
+// Mock posts — içerikler çevrilmez (kullanıcı verisi)
 const MOCK_POSTS = [
     {
         id: "1",
         author: "Sophie Laurent",
         avatar: null,
         initials: "SL",
-        role: "Certified Stylist",
+        role: "certifiedStylist" as PostRole,
         title: "How to master tonal dressing in 2026",
         content:
             "Tonal dressing — wearing shades of the same color from head to toe — has become the defining trend of the season. The key is to vary textures and fabrics to add depth without breaking the palette.",
@@ -32,7 +35,7 @@ const MOCK_POSTS = [
         author: "Marcus Chen",
         avatar: null,
         initials: "MC",
-        role: "User",
+        role: "user" as PostRole,
         title: "My capsule wardrobe journey — 6 months in",
         content:
             "I've documented every purchase and purge over 6 months of building my capsule wardrobe. Starting with 112 pieces, I now have 34 pieces that cover 95% of my daily needs.",
@@ -47,7 +50,7 @@ const MOCK_POSTS = [
         author: "Amara Osei",
         avatar: null,
         initials: "AO",
-        role: "User",
+        role: "user" as PostRole,
         title: "Spring color trends: what Vesto AI detected in my wardrobe",
         content:
             "After uploading all 67 of my spring items, the AI flagged a strong bias toward sage green and dusty rose. I had no idea until I saw the color breakdown visualization!",
@@ -62,7 +65,7 @@ const MOCK_POSTS = [
         author: "Elena Volkov",
         avatar: null,
         initials: "EV",
-        role: "Stylist",
+        role: "stylist" as PostRole,
         title: "The 3 outfit formulas that work for every body type",
         content:
             "After 8 years of styling clients, I've landed on three universal formulas. The trick is not in the specific pieces, but in the proportions and the role each piece plays.",
@@ -77,13 +80,14 @@ const MOCK_POSTS = [
 const TRENDING_TAGS = ["minimalism", "capsule", "AI", "tonal", "spring", "styling", "2026trends"];
 
 export default function CommunityPage() {
+    const t = useTranslations("community");
     const [search, setSearch] = useState("");
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
     const filtered = MOCK_POSTS.filter(
         (post) =>
             post.title.toLowerCase().includes(search.toLowerCase()) ||
-            post.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
+            post.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
     );
 
     function toggleLike(id: string) {
@@ -101,14 +105,12 @@ export default function CommunityPage() {
                 {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-4xl font-light">Community</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Discover fashion insights, tips, and conversations.
-                        </p>
+                        <h1 className="text-4xl font-light">{t("title")}</h1>
+                        <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
                     </div>
                     <Button>
                         <Plus size={15} className="mr-2" />
-                        New post
+                        {t("newPost")}
                     </Button>
                 </div>
 
@@ -119,7 +121,7 @@ export default function CommunityPage() {
                         <div className="relative">
                             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                             <Input
-                                placeholder="Search posts or tags..."
+                                placeholder={t("searchPlaceholder")}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-9"
@@ -151,7 +153,7 @@ export default function CommunityPage() {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                                                        {post.role}
+                                                        {t(`roles.${post.role}` as Parameters<typeof t>[0])}
                                                     </Badge>
                                                     <span className="text-[11px] text-muted-foreground">{post.time}</span>
                                                 </div>
@@ -197,7 +199,7 @@ export default function CommunityPage() {
                                             </button>
                                             <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto">
                                                 <Share2 size={14} />
-                                                Share
+                                                {t("share")}
                                             </button>
                                         </div>
                                     </CardContent>
@@ -210,7 +212,7 @@ export default function CommunityPage() {
                     <aside className="space-y-5">
                         <Card>
                             <CardHeader className="pb-3">
-                                <h3 className="text-sm font-medium">Trending topics</h3>
+                                <h3 className="text-sm font-medium">{t("trendingTopics")}</h3>
                             </CardHeader>
                             <CardContent className="flex flex-wrap gap-2">
                                 {TRENDING_TAGS.map((tag) => (

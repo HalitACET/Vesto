@@ -1,0 +1,459 @@
+{
+    "common": {
+        "appName": "Vesto AI",
+        "loading": "Yükleniyor...",
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "edit": "Düzenle",
+        "search": "Ara",
+        "add": "Ekle",
+        "close": "Kapat",
+        "back": "Geri",
+        "next": "İleri",
+        "confirm": "Onayla",
+        "error": "Hata",
+        "success": "Başarılı"
+    },
+    "auth": {
+        "login": "Giriş Yap",
+        "logout": "Çıkış Yap",
+        "register": "Kayıt Ol",
+        "email": "E-posta",
+        "emailPlaceholder": "siz@örnek.com",
+        "password": "Şifre",
+        "passwordPlaceholder": "••••••••",
+        "passwordMinPlaceholder": "En az 8 karakter",
+        "fullName": "Ad Soyad",
+        "namePlaceholder": "Adınız",
+        "forgotPassword": "Şifremi Unuttum",
+        "loginHeading": "Tekrar hoş geldiniz.",
+        "loginSubheading": "Vesto hesabınıza giriş yapın.",
+        "loginButton": "Giriş Yap",
+        "loggingIn": "Giriş yapılıyor...",
+        "loginFailed": "Giriş başarısız oldu.",
+        "noAccount": "Hesabınız yok mu?",
+        "createOne": "Oluşturun",
+        "registerHeading": "Dolabınızı oluşturun.",
+        "registerSubheading": "AI destekli moda yolculuğunuza başlayın.",
+        "createAccount": "Hesap Oluştur",
+        "creatingAccount": "Hesap oluşturuluyor...",
+        "registerFailed": "Kayıt başarısız oldu.",
+        "googleFailed": "Google ile giriş başarısız oldu.",
+        "orSeparator": "veya",
+        "continueWithGoogle": "Google ile devam et",
+        "hasAccount": "Zaten hesabınız var mı?",
+        "signIn": "Giriş yapın"
+    },
+    "sidebar": {
+        "dashboard": "Panel",
+        "wardrobe": "Dolabım",
+        "canvas": "Kombin Editörü",
+        "community": "Topluluk",
+        "clients": "Müşteriler",
+        "settings": "Ayarlar",
+        "admin": "Yönetim",
+        "adminUsers": "Kullanıcı Yönetimi"
+    },
+    "dashboard": {
+        "overview": {
+            "title": "Genel Bakış",
+            "subtitle": "Platformdaki tüm aktiviteleri ve temel metrikleri buradan izleyebilirsiniz."
+        },
+        "stats": {
+            "totalUsers": "Toplam Kullanıcı",
+            "newClothes": "Yeni Yüklenen Kıyafetler",
+            "pendingRequests": "Bekleyen Kombin Talepleri",
+            "activeStylists": "Aktif Stilistler",
+            "thisMonth": "bu ay",
+            "noChange": "Değişim yok"
+        },
+        "activity": {
+            "title": "Son Aktiviteler",
+            "columns": {
+                "user": "Kullanıcı Adı",
+                "action": "İşlem Tipi",
+                "date": "Tarih"
+            },
+            "badge": {
+                "new": "Yeni",
+                "aiReview": "AI Kontrolü"
+            },
+            "actions": {
+                "addedWardrobe": "Yeni bir kapsül gardırop ekledi",
+                "requestedOutfit": "Kombin önerisi talep etti",
+                "aiColorPending": "Yapay zeka renk tespiti onayı bekliyor",
+                "sharedPost": "Topluluk forumunda paylaşım yaptı",
+                "uploadedCatalog": "Yeni kıyafet kataloğu yükledi"
+            },
+            "dates": {
+                "min10": "10 dk önce",
+                "min45": "45 dk önce",
+                "hour2": "2 saat önce",
+                "hour4": "4 saat önce",
+                "hour5": "5 saat önce"
+            }
+        }
+    },
+    "wardrobe": {
+        "title": "Dolabım",
+        "addItem": "Parça Ekle",
+        "searchPlaceholder": "Parça ara...",
+        "noItems": "Parça bulunamadı.",
+        "addFirstItem": "İlk parçanı ekle",
+        "itemCount": "{count, plural, =0 {koleksiyonunuzda parça yok} =1 {koleksiyonunuzda 1 parça} other {koleksiyonunuzda # parça}}",
+        "aiTagged": "AI etiketlendi",
+        "categories": {
+            "all": "Tümü",
+            "tops": "Üstler",
+            "bottoms": "Altlar",
+            "dresses": "Elbiseler",
+            "outerwear": "Dış Giyim",
+            "shoes": "Ayakkabılar",
+            "accessories": "Aksesuar",
+            "bags": "Çantalar"
+        },
+        "upload": {
+            "title": "Kıyafet Ekle",
+            "dropzone": "Fotoğrafı buraya sürükleyin veya seçmek için tıklayın",
+            "aiTag": "Yapay zeka renk ve kategoriyi otomatik tanımlayacak",
+            "itemName": "Parça Adı",
+            "itemNamePlaceholder": "Örn. Beyaz keten gömlek",
+            "analyzeButton": "Analiz Et ve Dolaba Ekle"
+        }
+    },
+    "canvas": {
+        "title": "Stylist Canvas",
+        "subtitle": "Kıyafetleri sürükleyerek kombin oluşturun",
+        "save": "Kombini Kaydet",
+        "clear": "Temizle",
+        "wardrobePanel": "Dolap",
+        "searchPlaceholder": "Dolap ara...",
+        "noItems": "Parça bulunamadı.",
+        "canvasEmpty": "Kıyafetleri buraya sürükleyerek kombin oluşturun",
+        "itemCount": "{count, plural, =0 {0 parça} =1 {1 parça} other {# parça}}",
+        "savedToast": "Kombin kaydedildi! #{id}",
+        "occasions": {
+            "casual": "Günlük",
+            "formal": "Resmi",
+            "business": "İş",
+            "sporty": "Spor",
+            "evening": "Gece",
+            "beach": "Plaj"
+        },
+        "seasons": {
+            "spring": "İlkbahar",
+            "summer": "Yaz",
+            "fall": "Sonbahar",
+            "winter": "Kış"
+        },
+        "saveModal": {
+            "title": "Kombini Kaydet",
+            "name": "Kombin Adı",
+            "nameRequired": "Kombin adı zorunludur.",
+            "namePlaceholder": "Yaz kombini, İş toplantısı...",
+            "description": "Açıklama (opsiyonel)",
+            "descriptionPlaceholder": "Bu kombinle ilgili notlar...",
+            "occasion": "Vesile (opsiyonel)",
+            "season": "Sezon (opsiyonel)",
+            "visibility": "Görünürlük",
+            "visibilityPrivate": "Gizli",
+            "visibilityPublic": "Herkese açık",
+            "visibilityFollowers": "Takipçiler",
+            "summary": "{count, plural, =1 {1 parça} other {# parça}} kaydedilecek",
+            "saving": "Kaydediliyor...",
+            "saveButton": "Kaydet",
+            "itemsRequired": "En az bir parça eklemelisiniz.",
+            "saveError": "Kayıt sırasında hata oluştu."
+        }
+    },
+    "community": {
+        "title": "Topluluk",
+        "subtitle": "Moda öngörülerini, ipuçlarını ve sohbetleri keşfedin.",
+        "newPost": "Yeni Gönderi",
+        "searchPlaceholder": "Gönderi veya etiket ara...",
+        "trendingTopics": "Trend Konular",
+        "share": "Paylaş",
+        "roles": {
+            "certifiedStylist": "Sertifikalı Stilist",
+            "stylist": "Stilist",
+            "user": "Kullanıcı"
+        }
+    },
+    "admin": {
+        "title": "Admin Paneli",
+        "subtitle": "Platform yönetimi ve AI doğrulama",
+        "tabs": {
+            "users": "Kullanıcılar",
+            "aiTags": "AI Etiket Doğrulama",
+            "moderation": "Forum Moderasyonu"
+        },
+        "users": {
+            "heading": "Kullanıcı Yönetimi",
+            "description": "Tüm kullanıcıları listeleyin, rollerini değiştirin ve hesapları yönetin.",
+            "goButton": "Kullanıcı Yönetimine Git"
+        },
+        "aiQueue": {
+            "filters": {
+                "all": "Tümü",
+                "pending": "Bekleyen",
+                "approved": "Onaylanan",
+                "corrected": "Düzeltilen",
+                "rejected": "Reddedilen"
+            },
+            "lowConfidence": "Düşük güven (<70%)",
+            "itemCount": "{count} öğe",
+            "loading": "Yükleniyor...",
+            "emptyPending": "Bekleyen AI etiketi yok.",
+            "emptyFilter": "Bu filtrede öğe bulunamadı.",
+            "confidence": "Güven:",
+            "corrections": "Düzeltmeler:",
+            "statusBadge": {
+                "approved": "Onaylı",
+                "rejected": "Reddedildi",
+                "corrected": "Düzeltildi"
+            },
+            "actions": {
+                "approve": "Onayla",
+                "correct": "Düzelt",
+                "reject": "Reddet"
+            },
+            "toast": {
+                "approved": "✓ Onaylandı",
+                "rejected": "✓ Reddedildi",
+                "corrected": "✓ Düzeltme kaydedildi",
+                "error": "Hata: {message}"
+            }
+        },
+        "correctModal": {
+            "title": "AI Etiketini Düzelt",
+            "hint": "Boş bırakılan alanlar güncellenmez.",
+            "fields": {
+                "color": "Renk",
+                "material": "Materyal",
+                "pattern": "Desen",
+                "category": "Kategori"
+            },
+            "placeholders": {
+                "color": "Doğru renk...",
+                "material": "Doğru materyal...",
+                "pattern": "Doğru desen...",
+                "category": "Doğru kategori..."
+            },
+            "notes": "Not (opsiyonel)",
+            "notesPlaceholder": "Düzeltme notu...",
+            "saving": "Kaydediliyor...",
+            "save": "Kaydet"
+        },
+        "rejectModal": {
+            "title": "AI Etiketini Reddet",
+            "description": "Neden reddediyorsunuz? Bu not admin kaydına yazılır.",
+            "reason": "Sebep",
+            "reasonPlaceholder": "Yanlış kategori, renk tespiti hatalı, vs...",
+            "saving": "Kaydediliyor...",
+            "reject": "Reddet"
+        },
+        "moderation": {
+            "remove": "Kaldır",
+            "dismiss": "Yoksay"
+        }
+    },
+    "adminUsers": {
+        "title": "Kullanıcı Yönetimi",
+        "subtitle": "Tüm kayıtlı kullanıcılar ve rollerini yönetin",
+        "backToAdmin": "Admin Paneli",
+        "searchPlaceholder": "İsim veya e-posta ara...",
+        "notFound": "Kullanıcı bulunamadı.",
+        "stats": {
+            "total": "Toplam",
+            "users": "Kullanıcı",
+            "stylists": "Stilist",
+            "suspended": "Askıya Alınan"
+        },
+        "roleFilters": {
+            "all": "Tümü",
+            "user": "Kullanıcılar",
+            "stylist": "Stilistler",
+            "admin": "Adminler"
+        },
+        "roleLabels": {
+            "user": "Kullanıcı",
+            "stylist": "Stilist",
+            "admin": "Admin"
+        },
+        "statusLabels": {
+            "active": "Aktif",
+            "suspended": "Askıda"
+        },
+        "table": {
+            "user": "Kullanıcı",
+            "role": "Rol",
+            "status": "Durum",
+            "wardrobe": "Gardırop",
+            "outfit": "Kombin",
+            "lastActive": "Son Aktif",
+            "detail": "Detay"
+        },
+        "timeAgo": {
+            "minutes": "{count}dk önce",
+            "hours": "{count}s önce",
+            "days": "{count}g önce"
+        },
+        "detail": {
+            "backToList": "Kullanıcı Listesi",
+            "joinedAt": "Katılım:",
+            "lastActive": "Son aktif:",
+            "stats": {
+                "wardrobe": "Gardırop",
+                "outfit": "Kombin",
+                "followers": "Takipçi",
+                "following": "Takip"
+            },
+            "adminActions": "Admin İşlemleri",
+            "role": "Rol",
+            "assignedStylist": "Atanmış Stilist",
+            "noStylist": "— Stilist seçilmedi —",
+            "currentStylist": "Şu an: {name}",
+            "accountStatus": "Hesap Durumu",
+            "suspend": "Hesabı Askıya Al",
+            "activate": "Hesabı Aktif Et",
+            "confirmSuspend": "Hesap askıya alınacak. Emin misiniz?",
+            "confirmActivate": "Hesap tekrar aktif edilecek. Emin misiniz?",
+            "confirmYes": "Evet, devam et",
+            "stylePreferences": "Stil Tercihleri"
+        }
+    },
+    "settings": {
+        "title": "Ayarlar",
+        "sections": {
+            "language": "Dil",
+            "appearance": "Görünüm",
+            "profile": "Profil",
+            "notifications": "Bildirimler"
+        },
+        "language": {
+            "heading": "Dil",
+            "description": "Tercih ettiğiniz arayüz dilini seçin.",
+            "turkish": "Türkçe",
+            "english": "English",
+            "current": "Şu anki dil:"
+        },
+        "appearance": {
+            "heading": "Görünüm",
+            "description": "Tema tercihlerinizi yönetin.",
+            "darkMode": "Karanlık mod",
+            "darkModeDesc": "Arayüzü karanlık temaya geçirin."
+        },
+        "profile": {
+            "heading": "Profil",
+            "description": "Ad ve biyografi gibi profil bilgilerinizi güncelleyin.",
+            "comingSoon": "Yakında"
+        },
+        "notifications": {
+            "heading": "Bildirimler",
+            "description": "E-posta ve uygulama içi bildirimleri yönetin.",
+            "comingSoon": "Yakında"
+        }
+    },
+    "clients": {
+        "title": "Müşterilerim",
+        "subtitle": "Size atanmış kullanıcılar ve gardıropları",
+        "stats": {
+            "totalClients": "Toplam Müşteri",
+            "totalWardrobe": "Toplam Kıyafet",
+            "totalOutfits": "Toplam Kombin"
+        },
+        "searchPlaceholder": "Müşteri ara...",
+        "noResults": "Arama sonucu bulunamadı.",
+        "noClients": "Henüz atanmış müşteriniz yok.",
+        "viewProfile": "Profili Görüntüle",
+        "statusLabels": {
+            "active": "Aktif",
+            "suspended": "Askıda"
+        },
+        "itemCounts": {
+            "wardrobe": "{count} kıyafet",
+            "outfits": "{count} kombin"
+        },
+        "detail": {
+            "backToList": "Müşterilerim",
+            "notFound": "Müşteri bulunamadı.",
+            "goBack": "Geri dön",
+            "joinedAt": "Katılım:",
+            "lastActive": "Son aktif:",
+            "stats": {
+                "wardrobe": "Gardırop",
+                "outfit": "Kombin",
+                "followers": "Takipçi",
+                "following": "Takip"
+            },
+            "stylePreferences": "Stil Tercihleri",
+            "quickActions": "Hızlı İşlemler",
+            "viewWardrobe": "Gardırobu Görüntüle",
+            "createOutfit": "Kombin Hazırla"
+        }
+    },
+    "outfits": {
+        "title": "Kombin Önerileri",
+        "subtitle": "Bugünkü hava durumuna ve stilinize göre AI tarafından seçilmiş kombinler.",
+        "weather": {
+            "feelsLike": "Hissedilen",
+            "humidity": "nem",
+            "unavailable": "Hava durumu kullanılamıyor — akıllı öneriler için OpenWeather API anahtarınızı ekleyin."
+        },
+        "aiMatched": "AI eşleşti",
+        "styleScore": "Stil skoru",
+        "wearThis": "Bunu giy"
+    },
+    "landing": {
+        "badge": "Yapay Zeka Destekli Moda Platformu",
+        "heroTitle1": "Gardırobunuz,",
+        "heroTitleHighlight": "yeniden hayal edildi",
+        "heroTitle2": "yapay zeka tarafından.",
+        "heroSubtitle": "Dolabınızdaki her parçayı dijitalleştirin. Yapay zekanın stilinizi analiz etmesine, hava durumuna uygun kombinler önermesine ve sizi profesyonel stilistlerle buluşturmasına izin verin — hepsi tek bir zarif platformda.",
+        "startFree": "Ücretsiz başla",
+        "viewDemo": "Demo görüntüle",
+        "featuresTitle1": "Moda zekası,",
+        "featuresTitleHighlight": "sizin için inşa edildi.",
+        "featuresSubtitle": "Dolabınızdan özenle seçilmiş kombinlere — Vesto her adımı hassasiyet ve zarafetle yönetir.",
+        "ctaTitle1": "Bugün",
+        "ctaTitleHighlight": "dijital gardırobunuzu",
+        "ctaTitle2": "oluşturun.",
+        "ctaSubtitle": "Vesto'nun stillerini yönetmesine izin veren binlerce moda tutkununa katılın.",
+        "ctaButton": "Hesabınızı oluşturun",
+        "footerRights": "© 2026 Vesto AI. Tüm hakları saklıdır.",
+        "footerPrivacy": "Gizlilik",
+        "footerTerms": "Koşullar",
+        "features": {
+            "aiWardrobe": {
+                "title": "AI Gardırop Analizi",
+                "description": "Bilgisayarlı görme, kıyafet fotoğraflarınızdan renkleri, desenleri ve kategorileri otomatik olarak algılar."
+            },
+            "weatherOutfits": {
+                "title": "Hava Durumuna Göre Kombinler",
+                "description": "Yerel hava durumunuza ve kişisel stil tercihlerinize göre günlük kombin önerileri alın."
+            },
+            "stylistCommunity": {
+                "title": "Stilist Topluluğu",
+                "description": "Gardırop envanterinizden doğrudan kişiselleştirilmiş görünümler oluşturan sertifikalı stilistlerle bağlantı kurun."
+            },
+            "canvas": {
+                "title": "Stilist Canvas",
+                "description": "Sizi veya stilistinizin parçaları görsel olarak karıştırıp eşleştirmenize olanak tanıyan sürükle-bırak kombin oluşturucu."
+            }
+        }
+    },
+    "errors": {
+        "notFound": "Sayfa bulunamadı",
+        "unauthorized": "Yetkisiz erişim",
+        "serverError": "Sunucu hatası",
+        "tryAgain": "Tekrar deneyin"
+    },
+    "toasts": {
+        "savedSuccess": "Başarıyla kaydedildi",
+        "deletedSuccess": "Başarıyla silindi",
+        "updateSuccess": "Başarıyla güncellendi",
+        "loginSuccess": "Giriş başarılı",
+        "logoutSuccess": "Çıkış yapıldı"
+    }
+}

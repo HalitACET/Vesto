@@ -1,38 +1,15 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Zap, CloudSun, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Badge } from "@/components/ui/badge";
 
-const features = [
-  {
-    icon: Sparkles,
-    title: "AI Wardrobe Analysis",
-    description:
-      "Computer Vision automatically detects colors, patterns, and categories from your clothing photos.",
-  },
-  {
-    icon: CloudSun,
-    title: "Weather-Smart Outfits",
-    description:
-      "Get daily outfit suggestions tailored to your local weather and your personal style preferences.",
-  },
-  {
-    icon: Users,
-    title: "Stylist Community",
-    description:
-      "Connect with certified stylists who craft personalized looks directly from your wardrobe inventory.",
-  },
-  {
-    icon: Zap,
-    title: "Stylist Canvas",
-    description:
-      "Drag-and-drop outfit builder that lets you — or your stylist — mix and match pieces visually.",
-  },
-];
+const FEATURE_KEYS = ["aiWardrobe", "weatherOutfits", "stylistCommunity", "canvas"] as const;
+const FEATURE_ICONS = { aiWardrobe: Sparkles, weatherOutfits: CloudSun, stylistCommunity: Users, canvas: Zap };
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -44,6 +21,8 @@ const fadeUp = {
 };
 
 export default function LandingPage() {
+  const t = useTranslations("landing");
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -71,7 +50,7 @@ export default function LandingPage() {
               className="mb-8 gap-1.5 border-accent/40 text-accent px-4 py-1.5 text-xs tracking-widest uppercase"
             >
               <Sparkles size={10} />
-              AI-Powered Fashion Platform
+              {t("badge")}
             </Badge>
           </motion.div>
 
@@ -81,10 +60,10 @@ export default function LandingPage() {
             className="mb-6 text-6xl font-light leading-[1.05] tracking-tight md:text-8xl"
             style={{ fontFamily: "Cormorant Garamond, serif" }}
           >
-            Your wardrobe,{" "}
-            <span className="text-gradient-gold italic">reimagined</span>
+            {t("heroTitle1")}{" "}
+            <span className="text-gradient-gold italic">{t("heroTitleHighlight")}</span>
             <br />
-            by artificial intelligence.
+            {t("heroTitle2")}
           </motion.h1>
 
           <motion.p
@@ -92,9 +71,7 @@ export default function LandingPage() {
             variants={fadeUp}
             className="mb-10 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto leading-relaxed"
           >
-            Digitize every piece in your closet. Let AI analyze your style,
-            suggest weather-perfect outfits, and connect you with professional
-            stylists — all in one elegant platform.
+            {t("heroSubtitle")}
           </motion.p>
 
           <motion.div
@@ -104,7 +81,7 @@ export default function LandingPage() {
           >
             <Button size="lg" asChild className="h-12 px-8 text-base">
               <Link href="/register">
-                Start for free
+                {t("startFree")}
                 <ArrowRight size={16} className="ml-2" />
               </Link>
             </Button>
@@ -114,7 +91,7 @@ export default function LandingPage() {
               asChild
               className="h-12 px-8 text-base"
             >
-              <Link href="/dashboard">View demo</Link>
+              <Link href="/dashboard">{t("viewDemo")}</Link>
             </Button>
           </motion.div>
         </motion.div>
@@ -133,22 +110,21 @@ export default function LandingPage() {
           className="mb-20 text-center"
         >
           <h2 className="mb-4 text-4xl font-light md:text-5xl">
-            Fashion intelligence,
+            {t("featuresTitle1")}
             <br />
-            <span className="text-gradient-gold italic">built for you.</span>
+            <span className="text-gradient-gold italic">{t("featuresTitleHighlight")}</span>
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            From your closet to curated looks — Vesto handles every step with
-            precision and elegance.
+            {t("featuresSubtitle")}
           </p>
         </motion.div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, i) => {
-            const Icon = feature.icon;
+          {FEATURE_KEYS.map((key, i) => {
+            const Icon = FEATURE_ICONS[key];
             return (
               <motion.div
-                key={feature.title}
+                key={key}
                 custom={i}
                 variants={fadeUp}
                 initial="hidden"
@@ -163,10 +139,10 @@ export default function LandingPage() {
                   className="mb-3 text-xl font-medium"
                   style={{ fontFamily: "Cormorant Garamond, serif" }}
                 >
-                  {feature.title}
+                  {t(`features.${key}.title` as Parameters<typeof t>[0])}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {feature.description}
+                  {t(`features.${key}.description` as Parameters<typeof t>[0])}
                 </p>
               </motion.div>
             );
@@ -181,12 +157,12 @@ export default function LandingPage() {
             className="mb-6 text-5xl font-light md:text-6xl"
             style={{ fontFamily: "Cormorant Garamond, serif" }}
           >
-            Begin your{" "}
-            <span className="italic opacity-70">digital wardrobe</span> today.
+            {t("ctaTitle1")}{" "}
+            <span className="italic opacity-70">{t("ctaTitleHighlight")}</span>{" "}
+            {t("ctaTitle2")}
           </h2>
           <p className="mb-10 text-primary-foreground/60 text-lg max-w-xl mx-auto">
-            Join thousands of fashion-forward individuals who let Vesto manage
-            their style.
+            {t("ctaSubtitle")}
           </p>
           <Button
             variant="outline"
@@ -195,7 +171,7 @@ export default function LandingPage() {
             className="h-12 px-10 text-base border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
           >
             <Link href="/register">
-              Create your account
+              {t("ctaButton")}
               <ArrowRight size={16} className="ml-2" />
             </Link>
           </Button>
@@ -205,13 +181,13 @@ export default function LandingPage() {
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="border-t border-border px-6 py-8">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-muted-foreground">
-          <p>© 2026 Vesto AI. All rights reserved.</p>
+          <p>{t("footerRights")}</p>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-foreground transition-colors">
-              Privacy
+              {t("footerPrivacy")}
             </Link>
             <Link href="#" className="hover:text-foreground transition-colors">
-              Terms
+              {t("footerTerms")}
             </Link>
           </div>
         </div>

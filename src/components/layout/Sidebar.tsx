@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import {
     LayoutDashboard,
     Shirt,
@@ -15,22 +15,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-const BASE_NAV = [
-    { href: "/dashboard", label: "Genel Bakış", icon: LayoutDashboard },
-    { href: "/dashboard/wardrobe", label: "Gardırop", icon: Shirt },
-    { href: "/dashboard/canvas", label: "Kombin Editörü", icon: Palette },
-    { href: "/dashboard/community", label: "Topluluk", icon: MessageSquareWarning },
-    { href: "/dashboard/settings", label: "Ayarlar", icon: Settings },
-];
-
-const STYLIST_NAV = [
-    { href: "/dashboard/clients", label: "Müşterilerim", icon: Users },
-];
-
-const ADMIN_NAV = [
-    { href: "/admin", label: "Admin Paneli", icon: ShieldCheck },
-    { href: "/admin/users", label: "Kullanıcı Yönetimi", icon: Users },
-];
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -66,6 +50,24 @@ function NavItem({ href, label, icon: Icon, pathname }: { href: string; label: s
 export function Sidebar({ isOpen = true }: SidebarProps) {
     const pathname = usePathname();
     const { isAdmin, isStylist, vestoUser } = useAuth();
+    const t = useTranslations("sidebar");
+
+    const BASE_NAV = [
+        { href: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
+        { href: "/dashboard/wardrobe", label: t("wardrobe"), icon: Shirt },
+        { href: "/dashboard/canvas", label: t("canvas"), icon: Palette },
+        { href: "/dashboard/community", label: t("community"), icon: MessageSquareWarning },
+        { href: "/dashboard/settings", label: t("settings"), icon: Settings },
+    ];
+
+    const STYLIST_NAV = [
+        { href: "/dashboard/clients", label: t("clients"), icon: Users },
+    ];
+
+    const ADMIN_NAV = [
+        { href: "/admin", label: t("admin"), icon: ShieldCheck },
+        { href: "/admin/users", label: t("adminUsers"), icon: Users },
+    ];
 
     const extraNav = isAdmin ? ADMIN_NAV : isStylist ? STYLIST_NAV : [];
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,42 +31,20 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const ROLE_OPTIONS: { label: string; value: UserRole }[] = [
-    { label: "Kullanıcı", value: "user" },
-    { label: "Stilist", value: "stylist" },
-    { label: "Admin", value: "admin" },
-];
-
 function getInitials(name: string) {
     return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-}
-
-function formatDate(iso?: string) {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleDateString("tr-TR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    });
-}
-
-function timeAgo(iso?: string) {
-    if (!iso) return "—";
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} dakika önce`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours} saat önce`;
-    return `${Math.floor(hours / 24)} gün önce`;
 }
 
 export default function AdminUserDetailPage({
     params,
 }: {
-    params: Promise<{ id: string }>;
+    params: Promise<{ id: string; locale: string }>;
 }) {
     const { id } = use(params);
     const router = useRouter();
+    const t = useTranslations("adminUsers");
+    const tCommon = useTranslations("common");
+    const locale = useLocale();
 
     const [user, setUser] = useState<VestoUser | null>(null);
     const [stylists, setStylists] = useState<VestoUser[]>([]);
@@ -76,12 +54,30 @@ export default function AdminUserDetailPage({
 
     useEffect(() => {
         Promise.all([getUser(id), getUsersByRole("stylist")])
-            .then(([u, s]) => {
-                setUser(u);
-                setStylists(s);
-            })
+            .then(([u, s]) => { setUser(u); setStylists(s); })
             .finally(() => setLoading(false));
     }, [id]);
+
+    function formatDate(iso?: string) {
+        if (!iso) return "—";
+        return new Date(iso).toLocaleDateString(locale === "tr" ? "tr-TR" : "en-US", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+    }
+
+    function timeAgo(iso?: string) {
+        if (!iso) return "—";
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return t("timeAgo.minutes", { count: mins });
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return t("timeAgo.hours", { count: hours });
+        return t("timeAgo.days", { count: Math.floor(hours / 24) });
+    }
+
+    const ROLE_OPTIONS: UserRole[] = ["user", "stylist", "admin"];
 
     async function handleRoleChange(role: UserRole) {
         if (!user) return;
@@ -125,9 +121,9 @@ export default function AdminUserDetailPage({
         return (
             <DashboardLayout>
                 <div className="flex flex-col items-center justify-center py-32 gap-4">
-                    <p className="text-muted-foreground">Kullanıcı bulunamadı.</p>
+                    <p className="text-muted-foreground">{t("notFound")}</p>
                     <Button variant="outline" onClick={() => router.push("/admin/users")}>
-                        Geri dön
+                        {t("detail.backToList")}
                     </Button>
                 </div>
             </DashboardLayout>
@@ -135,6 +131,13 @@ export default function AdminUserDetailPage({
     }
 
     const assignedStylist = stylists.find((s) => s.uid === user.assignedStylistId);
+
+    const DETAIL_STATS = [
+        { key: "wardrobe", value: user.wardrobeCount ?? 0, icon: Shirt },
+        { key: "outfit", value: user.outfitCount ?? 0, icon: Palette },
+        { key: "followers", value: user.followersCount ?? 0, icon: Users },
+        { key: "following", value: user.followingCount ?? 0, icon: Users },
+    ] as const;
 
     return (
         <DashboardLayout>
@@ -145,7 +148,7 @@ export default function AdminUserDetailPage({
                     className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <ArrowLeft size={14} />
-                    Kullanıcı Listesi
+                    {t("detail.backToList")}
                 </Link>
 
                 {/* Profile Card */}
@@ -164,7 +167,7 @@ export default function AdminUserDetailPage({
                                         variant={user.status === "active" ? "default" : "outline"}
                                         className={`text-xs ${user.status === "suspended" ? "border-destructive/50 text-destructive" : "bg-green-500/15 text-green-600 border-0"}`}
                                     >
-                                        {user.status === "active" ? "Aktif" : "Askıda"}
+                                        {t(`statusLabels.${user.status}` as Parameters<typeof t>[0])}
                                     </Badge>
                                 </div>
                                 {user.bio && (
@@ -180,10 +183,10 @@ export default function AdminUserDetailPage({
                                         </span>
                                     )}
                                     <span className="flex items-center gap-1.5">
-                                        <Calendar size={12} /> Katılım: {formatDate(user.createdAt)}
+                                        <Calendar size={12} /> {t("detail.joinedAt")} {formatDate(user.createdAt)}
                                     </span>
                                     <span className="flex items-center gap-1.5">
-                                        <Clock size={12} /> Son aktif: {timeAgo(user.lastActive)}
+                                        <Clock size={12} /> {t("detail.lastActive")} {timeAgo(user.lastActive)}
                                     </span>
                                 </div>
                             </div>
@@ -198,18 +201,15 @@ export default function AdminUserDetailPage({
                     transition={{ delay: 0.07 }}
                     className="grid grid-cols-2 sm:grid-cols-4 gap-4"
                 >
-                    {[
-                        { label: "Gardırop", value: user.wardrobeCount ?? 0, icon: Shirt },
-                        { label: "Kombin", value: user.outfitCount ?? 0, icon: Palette },
-                        { label: "Takipçi", value: user.followersCount ?? 0, icon: Users },
-                        { label: "Takip", value: user.followingCount ?? 0, icon: Users },
-                    ].map((s) => {
+                    {DETAIL_STATS.map((s) => {
                         const Icon = s.icon;
                         return (
-                            <Card key={s.label}>
+                            <Card key={s.key}>
                                 <CardContent className="flex items-center justify-between py-4 px-5">
                                     <div>
-                                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t(`detail.stats.${s.key}` as Parameters<typeof t>[0])}
+                                        </p>
                                         <p className="text-2xl font-light mt-0.5">{s.value}</p>
                                     </div>
                                     <Icon size={16} className="text-muted-foreground" />
@@ -229,34 +229,36 @@ export default function AdminUserDetailPage({
                         <CardHeader>
                             <CardTitle className="text-sm font-medium flex items-center gap-2">
                                 <ShieldCheck size={15} className="text-accent" />
-                                Admin İşlemleri
+                                {t("detail.adminActions")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-5">
-                            {/* Rol değiştirme */}
+                            {/* Role change */}
                             <div className="space-y-2">
-                                <p className="text-xs text-muted-foreground uppercase tracking-wide">Rol</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                                    {t("detail.role")}
+                                </p>
                                 <div className="flex gap-2 flex-wrap">
-                                    {ROLE_OPTIONS.map((opt) => (
+                                    {ROLE_OPTIONS.map((role) => (
                                         <Button
-                                            key={opt.value}
+                                            key={role}
                                             size="sm"
-                                            variant={user.role === opt.value ? "default" : "outline"}
+                                            variant={user.role === role ? "default" : "outline"}
                                             className="text-xs"
-                                            disabled={saving || user.role === opt.value}
-                                            onClick={() => handleRoleChange(opt.value)}
+                                            disabled={saving || user.role === role}
+                                            onClick={() => handleRoleChange(role)}
                                         >
-                                            {opt.label}
+                                            {t(`roleLabels.${role}` as Parameters<typeof t>[0])}
                                         </Button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Stilist atama */}
+                            {/* Stylist assignment */}
                             {user.role === "user" && (
                                 <div className="space-y-2">
                                     <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                        Atanmış Stilist
+                                        {t("detail.assignedStylist")}
                                     </p>
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <select
@@ -265,33 +267,31 @@ export default function AdminUserDetailPage({
                                             disabled={saving}
                                             onChange={(e) => handleStylistAssign(e.target.value)}
                                         >
-                                            <option value="">— Stilist seçilmedi —</option>
+                                            <option value="">{t("detail.noStylist")}</option>
                                             {stylists.map((s) => (
-                                                <option key={s.uid} value={s.uid}>
-                                                    {s.displayName}
-                                                </option>
+                                                <option key={s.uid} value={s.uid}>{s.displayName}</option>
                                             ))}
                                         </select>
                                         {assignedStylist && (
                                             <span className="text-xs text-muted-foreground">
-                                                Şu an: {assignedStylist.displayName}
+                                                {t("detail.currentStylist", { name: assignedStylist.displayName })}
                                             </span>
                                         )}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Hesap askıya alma */}
+                            {/* Account status */}
                             <div className="space-y-2 pt-2 border-t border-border">
                                 <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                    Hesap Durumu
+                                    {t("detail.accountStatus")}
                                 </p>
                                 {confirm ? (
                                     <div className="flex items-center gap-3">
                                         <p className="text-sm text-muted-foreground">
                                             {confirm === "suspend"
-                                                ? "Hesap askıya alınacak. Emin misiniz?"
-                                                : "Hesap tekrar aktif edilecek. Emin misiniz?"}
+                                                ? t("detail.confirmSuspend")
+                                                : t("detail.confirmActivate")}
                                         </p>
                                         <Button
                                             size="sm"
@@ -300,15 +300,10 @@ export default function AdminUserDetailPage({
                                             disabled={saving}
                                             onClick={handleStatusToggle}
                                         >
-                                            {saving ? "..." : "Evet, devam et"}
+                                            {saving ? "..." : t("detail.confirmYes")}
                                         </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="text-xs"
-                                            onClick={() => setConfirm(null)}
-                                        >
-                                            İptal
+                                        <Button size="sm" variant="ghost" className="text-xs" onClick={() => setConfirm(null)}>
+                                            {tCommon("cancel")}
                                         </Button>
                                     </div>
                                 ) : (
@@ -319,15 +314,9 @@ export default function AdminUserDetailPage({
                                         onClick={() => setConfirm(user.status === "active" ? "suspend" : "activate")}
                                     >
                                         {user.status === "active" ? (
-                                            <>
-                                                <ShieldAlert size={13} />
-                                                Hesabı Askıya Al
-                                            </>
+                                            <><ShieldAlert size={13} />{t("detail.suspend")}</>
                                         ) : (
-                                            <>
-                                                <ShieldCheck size={13} />
-                                                Hesabı Aktif Et
-                                            </>
+                                            <><ShieldCheck size={13} />{t("detail.activate")}</>
                                         )}
                                     </Button>
                                 )}
@@ -345,14 +334,12 @@ export default function AdminUserDetailPage({
                     >
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-sm font-medium">Stil Tercihleri</CardTitle>
+                                <CardTitle className="text-sm font-medium">{t("detail.stylePreferences")}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">
                                     {user.stylePreferences.map((pref) => (
-                                        <Badge key={pref} variant="secondary" className="text-xs capitalize">
-                                            {pref}
-                                        </Badge>
+                                        <Badge key={pref} variant="secondary" className="text-xs capitalize">{pref}</Badge>
                                     ))}
                                 </div>
                             </CardContent>

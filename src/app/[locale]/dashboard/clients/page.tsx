@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,17 +20,9 @@ function getInitials(name: string) {
     return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
-function timeAgo(iso?: string) {
-    if (!iso) return "—";
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}dk önce`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}s önce`;
-    return `${Math.floor(hours / 24)}g önce`;
-}
-
 export default function ClientsPage() {
+    const t = useTranslations("clients");
+    const locale = useLocale();
     const { vestoUser } = useAuth();
     const [clients, setClients] = useState<VestoUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -42,6 +35,16 @@ export default function ClientsPage() {
             .finally(() => setLoading(false));
     }, [vestoUser]);
 
+    function timeAgo(iso?: string) {
+        if (!iso) return "—";
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return `${mins}m`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `${hours}h`;
+        return `${Math.floor(hours / 24)}d`;
+    }
+
     const filtered = clients.filter((c) => {
         const q = search.toLowerCase();
         return (
@@ -52,7 +55,12 @@ export default function ClientsPage() {
 
     const totalWardrobe = clients.reduce((s, c) => s + (c.wardrobeCount ?? 0), 0);
     const totalOutfits = clients.reduce((s, c) => s + (c.outfitCount ?? 0), 0);
-    const activeClients = clients.filter((c) => c.status === "active").length;
+
+    const STAT_CARDS = [
+        { key: "totalClients", value: clients.length, icon: Users },
+        { key: "totalWardrobe", value: totalWardrobe, icon: Shirt },
+        { key: "totalOutfits", value: totalOutfits, icon: Palette },
+    ] as const;
 
     return (
         <DashboardLayout>
@@ -61,24 +69,18 @@ export default function ClientsPage() {
                 <div className="flex items-center gap-3">
                     <Users size={22} className="text-accent" />
                     <div>
-                        <h1 className="text-4xl font-light">Müşterilerim</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                            Size atanmış kullanıcılar ve gardıropları
-                        </p>
+                        <h1 className="text-4xl font-light">{t("title")}</h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">{t("subtitle")}</p>
                     </div>
                 </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {[
-                        { label: "Toplam Müşteri", value: clients.length, icon: Users },
-                        { label: "Toplam Kıyafet", value: totalWardrobe, icon: Shirt },
-                        { label: "Toplam Kombin", value: totalOutfits, icon: Palette },
-                    ].map((s, i) => {
+                    {STAT_CARDS.map((s, i) => {
                         const Icon = s.icon;
                         return (
                             <motion.div
-                                key={s.label}
+                                key={s.key}
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.06 }}
@@ -87,7 +89,7 @@ export default function ClientsPage() {
                                     <CardContent className="flex items-center justify-between py-4 px-5">
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                                {s.label}
+                                                {t(`stats.${s.key}` as Parameters<typeof t>[0])}
                                             </p>
                                             <p className="text-3xl font-light mt-0.5">{s.value}</p>
                                         </div>
@@ -103,7 +105,7 @@ export default function ClientsPage() {
                 <div className="relative max-w-sm">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                        placeholder="Müşteri ara..."
+                        placeholder={t("searchPlaceholder")}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-9 text-sm"
@@ -119,7 +121,7 @@ export default function ClientsPage() {
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="py-20 text-center text-sm text-muted-foreground">
-                        {search ? "Arama sonucu bulunamadı." : "Henüz atanmış müşteriniz yok."}
+                        {search ? t("noResults") : t("noClients")}
                     </div>
                 ) : (
                     <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -151,7 +153,7 @@ export default function ClientsPage() {
                                                 variant="outline"
                                                 className={`text-[10px] flex-shrink-0 ${client.status === "active" ? "border-green-500/40 text-green-600" : "border-destructive/40 text-destructive"}`}
                                             >
-                                                {client.status === "active" ? "Aktif" : "Askıda"}
+                                                {t(`statusLabels.${client.status}` as Parameters<typeof t>[0])}
                                             </Badge>
                                         </div>
 
@@ -159,11 +161,11 @@ export default function ClientsPage() {
                                         <div className="flex gap-4 text-xs text-muted-foreground">
                                             <span className="flex items-center gap-1">
                                                 <Shirt size={11} />
-                                                {client.wardrobeCount ?? 0} kıyafet
+                                                {t("itemCounts.wardrobe", { count: client.wardrobeCount ?? 0 })}
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <Palette size={11} />
-                                                {client.outfitCount ?? 0} kombin
+                                                {t("itemCounts.outfits", { count: client.outfitCount ?? 0 })}
                                             </span>
                                             <span className="flex items-center gap-1 ml-auto">
                                                 <Clock size={11} />
@@ -193,7 +195,7 @@ export default function ClientsPage() {
                                                 size="sm"
                                                 className="w-full text-xs gap-1.5"
                                             >
-                                                Profili Görüntüle
+                                                {t("viewProfile")}
                                                 <ChevronRight size={12} />
                                             </Button>
                                         </Link>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,21 +12,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAllUsers } from "@/lib/firebase/firestore";
 import type { VestoUser, UserRole, UserStatus } from "@/types";
-import {
-    Search,
-    Users,
-    ChevronRight,
-    ShieldCheck,
-    Sparkles,
-    UserIcon,
-} from "lucide-react";
+import { Search, Users, ChevronRight, ShieldCheck, Sparkles, UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
-
-const ROLE_LABELS: Record<UserRole, string> = {
-    user: "Kullanıcı",
-    stylist: "Stilist",
-    admin: "Admin",
-};
 
 const ROLE_VARIANTS: Record<UserRole, "default" | "secondary" | "destructive" | "outline"> = {
     user: "secondary",
@@ -42,42 +30,35 @@ function getInitials(name: string) {
     return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
-function timeAgo(iso?: string) {
-    if (!iso) return "—";
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}dk önce`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}s önce`;
-    return `${Math.floor(hours / 24)}g önce`;
-}
-
-const ROLE_FILTERS: { label: string; value: UserRole | "all" }[] = [
-    { label: "Tümü", value: "all" },
-    { label: "Kullanıcılar", value: "user" },
-    { label: "Stilistler", value: "stylist" },
-    { label: "Adminler", value: "admin" },
-];
-
 export default function AdminUsersPage() {
+    const t = useTranslations("adminUsers");
+    const tAdmin = useTranslations("admin");
+
     const [users, setUsers] = useState<VestoUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
 
     useEffect(() => {
-        getAllUsers()
-            .then(setUsers)
-            .finally(() => setLoading(false));
+        getAllUsers().then(setUsers).finally(() => setLoading(false));
     }, []);
+
+    function timeAgo(iso?: string) {
+        if (!iso) return "—";
+        const diff = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return t("timeAgo.minutes", { count: mins });
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return t("timeAgo.hours", { count: hours });
+        return t("timeAgo.days", { count: Math.floor(hours / 24) });
+    }
+
+    const ROLE_FILTER_KEYS: (UserRole | "all")[] = ["all", "user", "stylist", "admin"];
 
     const filtered = users.filter((u) => {
         const matchRole = roleFilter === "all" || u.role === roleFilter;
         const q = search.toLowerCase();
-        const matchSearch =
-            u.displayName.toLowerCase().includes(q) ||
-            u.email.toLowerCase().includes(q);
-        return matchRole && matchSearch;
+        return matchRole && (u.displayName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
     });
 
     const stats = {
@@ -87,6 +68,13 @@ export default function AdminUsersPage() {
         suspended: users.filter((u) => u.status === "suspended").length,
     };
 
+    const STAT_CARDS = [
+        { key: "total", value: stats.total, icon: Users },
+        { key: "users", value: stats.users, icon: UserIcon },
+        { key: "stylists", value: stats.stylists, icon: Sparkles },
+        { key: "suspended", value: stats.suspended, icon: ShieldCheck },
+    ] as const;
+
     return (
         <DashboardLayout>
             <div className="space-y-8">
@@ -95,32 +83,25 @@ export default function AdminUsersPage() {
                     <div className="flex items-center gap-3">
                         <Users size={22} className="text-accent" />
                         <div>
-                            <h1 className="text-4xl font-light">Kullanıcı Yönetimi</h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">
-                                Tüm kayıtlı kullanıcılar ve rollerini yönetin
-                            </p>
+                            <h1 className="text-4xl font-light">{t("title")}</h1>
+                            <p className="text-sm text-muted-foreground mt-0.5">{t("subtitle")}</p>
                         </div>
                     </div>
                     <Link href="/admin">
                         <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                             <ShieldCheck size={13} />
-                            Admin Paneli
+                            {t("backToAdmin")}
                         </Button>
                     </Link>
                 </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                        { label: "Toplam", value: stats.total, icon: Users },
-                        { label: "Kullanıcı", value: stats.users, icon: UserIcon },
-                        { label: "Stilist", value: stats.stylists, icon: Sparkles },
-                        { label: "Askıya Alınan", value: stats.suspended, icon: ShieldCheck },
-                    ].map((s, i) => {
+                    {STAT_CARDS.map((s, i) => {
                         const Icon = s.icon;
                         return (
                             <motion.div
-                                key={s.label}
+                                key={s.key}
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.06 }}
@@ -129,7 +110,7 @@ export default function AdminUsersPage() {
                                     <CardContent className="flex items-center justify-between py-4 px-5">
                                         <div>
                                             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                                {s.label}
+                                                {t(`stats.${s.key}` as Parameters<typeof t>[0])}
                                             </p>
                                             <p className="text-3xl font-light mt-0.5">{s.value}</p>
                                         </div>
@@ -146,22 +127,22 @@ export default function AdminUsersPage() {
                     <div className="relative flex-1 max-w-sm">
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                            placeholder="İsim veya e-posta ara..."
+                            placeholder={t("searchPlaceholder")}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-9 text-sm"
                         />
                     </div>
                     <div className="flex gap-1.5">
-                        {ROLE_FILTERS.map((f) => (
+                        {ROLE_FILTER_KEYS.map((key) => (
                             <Button
-                                key={f.value}
+                                key={key}
                                 size="sm"
-                                variant={roleFilter === f.value ? "default" : "outline"}
+                                variant={roleFilter === key ? "default" : "outline"}
                                 className="text-xs"
-                                onClick={() => setRoleFilter(f.value)}
+                                onClick={() => setRoleFilter(key)}
                             >
-                                {f.label}
+                                {t(`roleFilters.${key}` as Parameters<typeof t>[0])}
                             </Button>
                         ))}
                     </div>
@@ -172,12 +153,12 @@ export default function AdminUsersPage() {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-xs text-muted-foreground uppercase tracking-wide">
                             <tr>
-                                <th className="text-left px-5 py-3">Kullanıcı</th>
-                                <th className="text-left px-5 py-3">Rol</th>
-                                <th className="text-left px-5 py-3">Durum</th>
-                                <th className="text-right px-5 py-3">Gardırop</th>
-                                <th className="text-right px-5 py-3">Kombin</th>
-                                <th className="text-right px-5 py-3">Son Aktif</th>
+                                <th className="text-left px-5 py-3">{t("table.user")}</th>
+                                <th className="text-left px-5 py-3">{t("table.role")}</th>
+                                <th className="text-left px-5 py-3">{t("table.status")}</th>
+                                <th className="text-right px-5 py-3">{t("table.wardrobe")}</th>
+                                <th className="text-right px-5 py-3">{t("table.outfit")}</th>
+                                <th className="text-right px-5 py-3">{t("table.lastActive")}</th>
                                 <th className="px-5 py-3" />
                             </tr>
                         </thead>
@@ -213,7 +194,7 @@ export default function AdminUsersPage() {
                                         </td>
                                         <td className="px-5 py-3">
                                             <Badge variant={ROLE_VARIANTS[user.role]} className="text-xs capitalize">
-                                                {ROLE_LABELS[user.role]}
+                                                {t(`roleLabels.${user.role}` as Parameters<typeof t>[0])}
                                             </Badge>
                                         </td>
                                         <td className="px-5 py-3">
@@ -221,7 +202,7 @@ export default function AdminUsersPage() {
                                                 variant={STATUS_VARIANTS[user.status]}
                                                 className={`text-xs ${user.status === "suspended" ? "border-destructive/50 text-destructive" : "bg-green-500/15 text-green-600 border-0"}`}
                                             >
-                                                {user.status === "active" ? "Aktif" : "Askıda"}
+                                                {t(`statusLabels.${user.status}` as Parameters<typeof t>[0])}
                                             </Badge>
                                         </td>
                                         <td className="px-5 py-3 text-right text-muted-foreground">
@@ -236,7 +217,7 @@ export default function AdminUsersPage() {
                                         <td className="px-5 py-3 text-right">
                                             <Link href={`/admin/users/${user.uid}`}>
                                                 <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                                                    Detay
+                                                    {t("table.detail")}
                                                     <ChevronRight size={13} />
                                                 </Button>
                                             </Link>
@@ -247,7 +228,7 @@ export default function AdminUsersPage() {
                     </table>
                     {!loading && filtered.length === 0 && (
                         <div className="py-16 text-center text-sm text-muted-foreground">
-                            Kullanıcı bulunamadı.
+                            {t("notFound")}
                         </div>
                     )}
                 </div>

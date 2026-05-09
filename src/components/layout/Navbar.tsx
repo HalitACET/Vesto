@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/firebase/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,15 @@ interface NavbarProps {
 export function Navbar({ onMenuToggle }: NavbarProps) {
     const { firebaseUser, vestoUser, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+    const locale = useLocale() as Locale;
     const { theme, toggleTheme } = useTheme();
+    const t = useTranslations("sidebar");
+    const tAuth = useTranslations("auth");
+
+    function switchLocale(newLocale: Locale) {
+        router.replace(pathname, { locale: newLocale });
+    }
 
     const initials = vestoUser?.displayName
         ?.split(" ")
@@ -32,6 +41,13 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
         .join("")
         .toUpperCase()
         .slice(0, 2) ?? "V";
+
+    const NAV_LINKS = [
+        { href: "/dashboard", label: t("dashboard") },
+        { href: "/dashboard/wardrobe", label: t("wardrobe") },
+        { href: "/dashboard/canvas", label: t("canvas") },
+        { href: "/dashboard/community", label: t("community") },
+    ];
 
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -61,13 +77,7 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
 
                 {/* Center: nav links (desktop) */}
                 <nav className="hidden items-center gap-8 md:flex">
-                    {[
-                        { href: "/dashboard", label: "Dashboard" },
-                        { href: "/dashboard/wardrobe", label: "Wardrobe" },
-                        { href: "/dashboard/outfits", label: "Outfits" },
-                        { href: "/dashboard/canvas", label: "Stylist Canvas" },
-                        { href: "/dashboard/community", label: "Community" },
-                    ].map((item) => (
+                    {NAV_LINKS.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
@@ -80,6 +90,23 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
 
                 {/* Right: user menu */}
                 <div className="flex items-center gap-3">
+                    {/* Locale switcher */}
+                    <div className="flex items-center rounded-lg border border-border overflow-hidden">
+                        {(["tr", "en"] as Locale[]).map((loc) => (
+                            <button
+                                key={loc}
+                                onClick={() => switchLocale(loc)}
+                                className={`px-2.5 py-1.5 text-xs transition-colors ${
+                                    locale === loc
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                }`}
+                            >
+                                {loc.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+
                     {/* Dark mode toggle */}
                     <button
                         onClick={toggleTheme}
@@ -108,11 +135,11 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                                 </div>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                                    Dashboard
+                                    {t("dashboard")}
                                 </DropdownMenuItem>
                                 {vestoUser?.role === "admin" && (
                                     <DropdownMenuItem onClick={() => router.push("/admin")}>
-                                        Admin Panel
+                                        {t("admin")}
                                     </DropdownMenuItem>
                                 )}
                                 <DropdownMenuSeparator />
@@ -120,22 +147,21 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                                     className="text-destructive"
                                     onClick={async () => {
                                         await signOut();
-                                        // HTTP-only cookie sadece server temizleyebilir
                                         await fetch("/api/auth/session", { method: "DELETE" });
                                         router.push("/login");
                                     }}
                                 >
-                                    Sign out
+                                    {tAuth("logout")}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     ) : (
                         <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm" asChild>
-                                <Link href="/login">Sign in</Link>
+                                <Link href="/login">{tAuth("login")}</Link>
                             </Button>
                             <Button size="sm" asChild>
-                                <Link href="/register">Get started</Link>
+                                <Link href="/register">{tAuth("register")}</Link>
                             </Button>
                         </div>
                     )}

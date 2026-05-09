@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useWeather } from "@/hooks/useWeather";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +55,7 @@ const MOCK_OUTFITS = [
 ];
 
 export default function OutfitsPage() {
+    const t = useTranslations("outfits");
     const { weather, loading: weatherLoading } = useWeather();
 
     return (
@@ -61,10 +63,8 @@ export default function OutfitsPage() {
             <div className="space-y-8">
                 {/* Header */}
                 <div>
-                    <h1 className="text-4xl font-light">Outfit Suggestions</h1>
-                    <p className="text-muted-foreground text-sm mt-1">
-                        AI-curated looks tailored to today&apos;s weather &amp; your style.
-                    </p>
+                    <h1 className="text-4xl font-light">{t("title")}</h1>
+                    <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
                 </div>
 
                 {/* Weather strip */}
@@ -80,17 +80,15 @@ export default function OutfitsPage() {
                                     <span className="capitalize">{weather.description}</span>
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Feels like {weather.feelsLike}°C · {weather.humidity}% humidity
+                                    {t("weather.feelsLike")} {weather.feelsLike}°C · {weather.humidity}% {t("weather.humidity")}
                                 </p>
                             </div>
                         ) : (
-                            <p className="text-muted-foreground text-sm">
-                                Weather unavailable — add your OpenWeather API key to enable smart suggestions.
-                            </p>
+                            <p className="text-muted-foreground text-sm">{t("weather.unavailable")}</p>
                         )}
                         <Badge variant="outline" className="ml-auto border-accent/30 text-accent gap-1">
                             <Sparkles size={10} />
-                            AI matched
+                            {t("aiMatched")}
                         </Badge>
                     </CardContent>
                 </Card>
@@ -132,7 +130,7 @@ export default function OutfitsPage() {
                                     <div className="flex items-center gap-3">
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-muted-foreground">Style score</span>
+                                                <span className="text-xs text-muted-foreground">{t("styleScore")}</span>
                                                 <span className="text-xs font-medium">{outfit.score}%</span>
                                             </div>
                                             <div className="h-1 rounded-full bg-muted overflow-hidden">
@@ -162,7 +160,7 @@ export default function OutfitsPage() {
                                     <div className="flex gap-2 pt-1">
                                         <Button size="sm" className="flex-1 h-8 text-xs">
                                             <Sparkles size={12} className="mr-1" />
-                                            Wear this
+                                            {t("wearThis")}
                                         </Button>
                                         <Button variant="outline" size="sm" className="h-8 px-2">
                                             <Heart size={13} />
