@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +22,6 @@ function getInitials(name: string) {
 
 export default function ClientsPage() {
     const t = useTranslations("clients");
-    const locale = useLocale();
     const { vestoUser } = useAuth();
     const [clients, setClients] = useState<VestoUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,6 +36,7 @@ export default function ClientsPage() {
 
     function timeAgo(iso?: string) {
         if (!iso) return "—";
+        // eslint-disable-next-line react-hooks/purity
         const diff = Date.now() - new Date(iso).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 60) return `${mins}m`;

@@ -50,6 +50,8 @@
         "wardrobe": "Wardrobe",
         "canvas": "Outfit Editor",
         "community": "Community",
+        "outfits": "My Outfits",
+        "profile": "Profile",
         "clients": "Clients",
         "settings": "Settings",
         "admin": "Admin",
@@ -57,17 +59,17 @@
     },
     "dashboard": {
         "overview": {
-            "title": "Overview",
-            "subtitle": "Monitor all platform activity and key metrics from here."
+            "title": "Dashboard",
+            "subtitle": "Your personal style assistant and wardrobe in one place."
         },
-        "stats": {
-            "totalUsers": "Total Users",
-            "newClothes": "New Clothing Uploads",
-            "pendingRequests": "Pending Outfit Requests",
-            "activeStylists": "Active Stylists",
-            "thisMonth": "this month",
-            "noChange": "No change"
-        },
+        "welcomeTitle": "Welcome, {name}",
+        "wardrobeSummary": "You have {count} clothes",
+        "todaySummary": "{city}, {temp}°C, {condition}",
+        "recentOutfits": "You created {count} outfits",
+        "createOutfit": "Create New Outfit",
+        "emptyWardrobe": "You haven't added any clothes yet. Start by using the mobile app.",
+        "stylistStatsTitle": "Stylist Stats",
+        "stylistStatsPlaceholder": "Coming soon — will be active when the recommendation feature arrives",
         "activity": {
             "title": "Recent Activities",
             "columns": {
@@ -92,7 +94,12 @@
                 "hour2": "2 hours ago",
                 "hour4": "4 hours ago",
                 "hour5": "5 hours ago"
-            }
+            },
+            "totalUsers": "Total Users",
+            "newClothes": "New Clothing Uploads",
+            "pendingRequests": "Pending Outfit Requests",
+            "activeStylists": "Active Stylists",
+            "thisMonth": "this month"
         }
     },
     "wardrobe": {
@@ -105,13 +112,20 @@
         "aiTagged": "AI tagged",
         "categories": {
             "all": "All",
+            "top": "Top",
             "tops": "Tops",
+            "bottom": "Bottom",
             "bottoms": "Bottoms",
+            "dress": "Dress",
             "dresses": "Dresses",
             "outerwear": "Outerwear",
             "shoes": "Shoes",
+            "footwear": "Footwear",
+            "accessory": "Accessory",
             "accessories": "Accessories",
-            "bags": "Bags"
+            "bag": "Bag",
+            "bags": "Bags",
+            "jewelry": "Jewelry"
         },
         "upload": {
             "title": "Add Clothing Item",
@@ -119,20 +133,23 @@
             "aiTag": "AI will auto-analyze colors & category",
             "itemName": "Item Name",
             "itemNamePlaceholder": "e.g. White linen shirt",
-            "analyzeButton": "Analyze & Add to Wardrobe"
+            "analyzeButton": "Analyze & Add to Wardrobe",
+            "category": "Category",
+            "subcategory": "Subcategory",
+            "size": "Size (Optional)"
         }
     },
     "canvas": {
         "title": "Stylist Canvas",
         "subtitle": "Drag items to build your outfit",
-        "save": "Save Outfit",
+        "save": "Save",
         "clear": "Clear",
         "wardrobePanel": "Wardrobe",
         "searchPlaceholder": "Search wardrobe...",
         "noItems": "No items found.",
         "canvasEmpty": "Drag clothing items here to build your outfit",
         "itemCount": "{count, plural, =0 {0 items} =1 {1 item} other {# items}}",
-        "savedToast": "Outfit saved! #{id}",
+        "savedToast": "Outfit saved successfully! (ID: {id})",
         "occasions": {
             "casual": "Casual",
             "formal": "Formal",
@@ -179,6 +196,22 @@
             "stylist": "Stylist",
             "user": "User"
         }
+    },
+    "forum": {
+        "title": "Community",
+        "emptyTitle": "No posts yet",
+        "emptyDesc": "Be the first to share an outfit!",
+        "share": "Share to Forum",
+        "comment": "Write a comment...",
+        "send": "Send",
+        "deletePost": "Delete Post",
+        "likeCount": "{count} likes",
+        "commentCount": "{count} comments",
+        "loginToInteract": "Log in to like",
+        "shareOutfit": "Share Outfit",
+        "writeCaption": "Write something...",
+        "publish": "Publish",
+        "newPost": "New Post"
     },
     "admin": {
         "title": "Admin Panel",
@@ -346,8 +379,21 @@
         },
         "profile": {
             "heading": "Profile",
-            "description": "Update your profile information such as name and bio.",
-            "comingSoon": "Coming soon"
+            "description": "Update your profile information such as name, bio, and username.",
+            "displayName": "Display Name",
+            "username": "Username (@)",
+            "bio": "Bio",
+            "save": "Save Profile",
+            "saving": "Saving...",
+            "success": "Profile updated successfully!",
+            "errorTaken": "This username is already taken.",
+            "errorGeneric": "An error occurred while updating profile.",
+            "privacyHeading": "Privacy Settings",
+            "privacyDesc": "Manage your wardrobe and profile privacy.",
+            "shareWardrobe": "Share My Wardrobe",
+            "shareWardrobeDesc": "When enabled, all your clothing items will be public on your profile.",
+            "perItemLink": "Set per item individually",
+            "bioPlaceholder": "Tell us about yourself (max 150 characters)..."
         },
         "notifications": {
             "heading": "Notifications",
@@ -394,16 +440,25 @@
         }
     },
     "outfits": {
-        "title": "Outfit Suggestions",
-        "subtitle": "AI-curated looks tailored to today's weather & your style.",
-        "weather": {
-            "feelsLike": "Feels like",
-            "humidity": "humidity",
-            "unavailable": "Weather unavailable — add your OpenWeather API key to enable smart suggestions."
-        },
-        "aiMatched": "AI matched",
-        "styleScore": "Style score",
-        "wearThis": "Wear this"
+        "title": "My Outfits",
+        "subtitle": "{count} outfits",
+        "newOutfit": "New Outfit",
+        "latestLabel": "LATEST OUTFIT",
+        "favoriteLabel": "FAVORITE OUTFIT",
+        "allOutfits": "All Outfits",
+        "wearCountLabel": "worn {count} times",
+        "createdLabel": "created {date}",
+        "viewDetails": "View Details",
+        "edit": "Edit",
+        "favorite": "Favorite",
+        "emptyTitle": "You haven't created an outfit yet",
+        "emptyDescription": "Combine clothes from your wardrobe to create your first outfit",
+        "createFirstOutfit": "Create First Outfit",
+        "filterEmpty": "No outfits match this filter",
+        "clearFilter": "Clear Filter",
+        "filterAll": "All",
+        "filterFavorites": "Favorites",
+        "filterRecentlyWorn": "Recently Worn"
     },
     "landing": {
         "badge": "AI-Powered Fashion Platform",

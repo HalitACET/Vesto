@@ -10,6 +10,8 @@ import {
 import type { User } from "firebase/auth";
 import { watchAuthState } from "@/lib/firebase/auth";
 import { getUser } from "@/lib/firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
 import type { VestoUser } from "@/types";
 
 interface AuthContextValue {
@@ -34,17 +36,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = watchAuthState(async (user) => {
+        let unsubscribeDoc: (() => void) | null = null;
+
+        const unsubscribeAuth = watchAuthState((user) => {
             setFirebaseUser(user);
+
+            // Clean up previous document listener
+            if (unsubscribeDoc) {
+                unsubscribeDoc();
+                unsubscribeDoc = null;
+            }
+
             if (user) {
-                const profile = await getUser(user.uid);
-                setVestoUser(profile);
+                unsubscribeDoc = onSnapshot(
+                    doc(db, "users", user.uid),
+                    (snapshot) => {
+                        if (snapshot.exists()) {
+                            setVestoUser({ uid: snapshot.id, ...snapshot.data() } as VestoUser);
+                        } else {
+                            setVestoUser(null);
+                        }
+                        setLoading(false);
+                    },
+                    (error) => {
+                        console.error("Error subscribing to user doc:", error);
+                        setLoading(false);
+                    }
+                );
             } else {
                 setVestoUser(null);
+                setLoading(false);
             }
-            setLoading(false);
         });
-        return unsubscribe;
+
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeDoc) {
+                unsubscribeDoc();
+            }
+        };
     }, []);
 
     const isAdmin = vestoUser?.role === "admin";

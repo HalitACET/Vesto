@@ -66,6 +66,7 @@ export default function ClientDetailPage({
 
     function timeAgo(iso?: string) {
         if (!iso) return "—";
+        // eslint-disable-next-line react-hooks/purity
         const diff = Date.now() - new Date(iso).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 60) return `${mins}m`;
@@ -102,7 +103,7 @@ export default function ClientDetailPage({
     const DETAIL_STATS = [
         { key: "wardrobe", value: client.wardrobeCount ?? 0, icon: Shirt },
         { key: "outfit", value: client.outfitCount ?? 0, icon: Palette },
-        { key: "followers", value: client.followersCount ?? 0, icon: Users },
+        { key: "followers", value: client.followerCount ?? 0, icon: Users },
         { key: "following", value: client.followingCount ?? 0, icon: Users },
     ] as const;
 

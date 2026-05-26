@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
-import { getWardrobeItems } from "@/lib/firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
 import type { WardrobeItem, ClothingCategory } from "@/types";
 
 export function useWardrobe() {
@@ -19,10 +20,29 @@ export function useWardrobe() {
         }
 
         setLoading(true);
-        getWardrobeItems(firebaseUser.uid)
-            .then(setItems)
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false));
+        const q = query(
+            collection(db, "wardrobeItems"),
+            where("userId", "==", firebaseUser.uid),
+            orderBy("createdAt", "desc")
+        );
+
+        const unsubscribe = onSnapshot(
+            q,
+            (snapshot) => {
+                const list = snapshot.docs
+                    .map((d) => ({ id: d.id, ...d.data() } as WardrobeItem))
+                    .filter((item) => !(item as any).isArchived);
+                setItems(list);
+                setLoading(false);
+            },
+            (err) => {
+                console.error("Error subscribing to wardrobe:", err);
+                setError(err.message);
+                setLoading(false);
+            }
+        );
+
+        return unsubscribe;
     }, [firebaseUser]);
 
     const filteredByCategory = (category: ClothingCategory) =>

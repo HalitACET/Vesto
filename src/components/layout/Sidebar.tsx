@@ -6,12 +6,14 @@ import {
     LayoutDashboard,
     Shirt,
     Palette,
+    Heart,
     MessageSquareWarning,
     Settings,
     ChevronRight,
     Sparkles,
     Users,
     ShieldCheck,
+    User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,7 +58,9 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
         { href: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
         { href: "/dashboard/wardrobe", label: t("wardrobe"), icon: Shirt },
         { href: "/dashboard/canvas", label: t("canvas"), icon: Palette },
+        { href: "/dashboard/outfits", label: t("outfits"), icon: Heart },
         { href: "/dashboard/community", label: t("community"), icon: MessageSquareWarning },
+        { href: "/dashboard/profile", label: t("profile"), icon: User },
         { href: "/dashboard/settings", label: t("settings"), icon: Settings },
     ];
 

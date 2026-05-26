@@ -227,3 +227,10 @@ Hafta 9'a geçmeden önce kapatılması planlanan:
 2. **Pagination** — Admin users sayfasında tüm kullanıcılar tek seferde çekiliyor
 3. **Prettier** — Kurulu değil, kod format'ı manuel
 4. **Test verisi eksikliği** — AI Validation ve Save Outfit fonksiyonel test edilemedi (mobile veri üretmedi)
+
+HAFTA 15 (POLISH) - TODO:
+- Mannequin SVG asset'lerini değiştir
+  - Şu an: çöp adam stili (functional placeholder)
+  - Hedef: profesyonel moda dergisi tonu
+  - Yapılabilirlikler: Envato, Figma Community, custom asset
+  - Süre: 30 dakika - 2 saat

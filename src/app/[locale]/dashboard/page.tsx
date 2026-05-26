@@ -2,133 +2,215 @@
 
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
+import { useWardrobe } from "@/hooks/useWardrobe";
+import { useOutfits } from "@/hooks/useOutfits";
+import { useWeather } from "@/hooks/useWeather";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shirt, Palette, ShieldCheck } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
+import { Plus, Shirt, Palette, CloudSun, ArrowRight, Sparkles } from "lucide-react";
+import type { VestoUser } from "@/types";
 
-type ActivityStatus = "done" | "pending" | "reviewing";
+// ── Components ───────────────────────────────────────────────────────────────
 
-export default function DashboardHome() {
+function WelcomeHeader({ user }: { user: VestoUser | null }) {
     const t = useTranslations("dashboard");
+    return (
+        <div className="mb-8">
+            <h1 className="text-4xl font-light tracking-tight text-foreground" style={{ fontFamily: "Cormorant Garamond, serif" }}>
+                {t("welcomeTitle", { name: user?.displayName?.split(" ")[0] ?? "User" })}
+            </h1>
+        </div>
+    );
+}
 
-    const STATS = [
-        { labelKey: "stats.totalUsers", value: "1,248", icon: Users, increment: `+12% ${t("stats.thisMonth")}` },
-        { labelKey: "stats.newClothes", value: "3,842", icon: Shirt, increment: `+4% ${t("stats.thisMonth")}` },
-        { labelKey: "stats.pendingRequests", value: "156", icon: Palette, increment: `-2% ${t("stats.thisMonth")}` },
-        { labelKey: "stats.activeStylists", value: "24", icon: ShieldCheck, increment: t("stats.noChange") },
-    ];
+function WardrobeSummary({ userId }: { userId: string }) {
+    const t = useTranslations("dashboard");
+    const { items, loading } = useWardrobe();
 
-    const RECENT_ACTIVITIES: { id: string; user: string; actionKey: string; dateKey: string; status: ActivityStatus }[] = [
-        { id: "1", user: "Sophie Laurent", actionKey: "activity.actions.addedWardrobe", dateKey: "activity.dates.min10", status: "done" },
-        { id: "2", user: "Marcus Chen", actionKey: "activity.actions.requestedOutfit", dateKey: "activity.dates.min45", status: "pending" },
-        { id: "3", user: "Amara Osei", actionKey: "activity.actions.aiColorPending", dateKey: "activity.dates.hour2", status: "reviewing" },
-        { id: "4", user: "Elena Volkov", actionKey: "activity.actions.sharedPost", dateKey: "activity.dates.hour4", status: "done" },
-        { id: "5", user: "James Park", actionKey: "activity.actions.uploadedCatalog", dateKey: "activity.dates.hour5", status: "done" },
-    ];
+    if (loading) return <Skeleton className="h-32 w-full rounded-2xl" />;
+
+    if (items.length === 0) {
+        return (
+            <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                    <Shirt size={32} className="text-muted-foreground/30 mb-3" />
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                        {t("emptyWardrobe")}
+                    </p>
+                    <div className="mt-4 flex gap-4 grayscale opacity-50">
+                        <div className="h-8 w-24 bg-foreground rounded flex items-center justify-center text-[10px] text-background">App Store</div>
+                        <div className="h-8 w-24 bg-foreground rounded flex items-center justify-center text-[10px] text-background">Google Play</div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="bg-card/50 backdrop-blur-sm border-border/60">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                    <Shirt size={14} />
+                    {t("wardrobeSummary", { count: items.length })}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex gap-2 overflow-hidden">
+                    {items.slice(0, 5).map((item) => (
+                        <div key={item.id} className="h-16 w-12 rounded-md overflow-hidden border border-border">
+                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                        </div>
+                    ))}
+                    {items.length > 5 && (
+                        <div className="h-16 w-12 rounded-md bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                            +{items.length - 5}
+                        </div>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function TodayWeatherSummary({ city }: { city?: string }) {
+    const t = useTranslations("dashboard");
+    const { weather, loading } = useWeather(city || "Bursa");
+
+    if (loading) return <Skeleton className="h-32 w-full rounded-2xl" />;
+
+    return (
+        <Card className="bg-accent/5 border-accent/20">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold tracking-wider text-accent uppercase flex items-center gap-2">
+                    <CloudSun size={14} />
+                    {t("todaySummary", {
+                        city: weather?.city ?? "Bursa",
+                        temp: weather?.temperature ?? 0,
+                        condition: weather?.condition ?? "cloudy"
+                    })}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-4">
+                    <div className="text-3xl font-light">{weather?.temperature}°C</div>
+                    <p className="text-sm text-muted-foreground capitalize">{weather?.description}</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function RecentOutfits({ userId }: { userId: string }) {
+    const t = useTranslations("dashboard");
+    const { outfits, loading } = useOutfits();
+
+    if (loading) return <Skeleton className="h-32 w-full rounded-2xl" />;
+
+    return (
+        <Card className="bg-card/50 backdrop-blur-sm border-border/60">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                    <Palette size={14} />
+                    {t("recentOutfits", { count: outfits.length })}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                {outfits.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">Henüz bir outfit oluşturmadın.</p>
+                ) : (
+                    <div className="flex gap-2 overflow-hidden">
+                        {outfits.slice(0, 3).map((outfit) => (
+                            <div key={outfit.id} className="h-16 w-16 rounded-md overflow-hidden border border-border bg-muted grid grid-cols-2">
+                                {outfit.itemSnapshots?.slice(0, 4).map((snap) => (
+                                    <img key={snap.id} src={snap.imageUrl} alt="" className="h-full w-full object-cover" />
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function StylistStatsPlaceholder() {
+    const t = useTranslations("dashboard");
+    return (
+        <Card className="border-accent/30 bg-accent/5">
+            <CardHeader>
+                <CardTitle className="text-sm font-medium">{t("stylistStatsTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
+                    <Sparkles size={14} className="text-accent" />
+                    {t("stylistStatsPlaceholder")}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function CreateOutfitCTA() {
+    const t = useTranslations("dashboard");
+    return (
+        <Button asChild size="lg" className="w-full h-14 text-base gap-2 group">
+            <Link href="/dashboard/canvas">
+                <Plus size={18} />
+                {t("createOutfit")}
+                <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+        </Button>
+    );
+}
+
+// ── Main Dashboard ───────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+    const { vestoUser, loading: authLoading } = useAuth();
+
+    if (authLoading) {
+        return (
+            <DashboardLayout>
+                <div className="space-y-6">
+                    <Skeleton className="h-10 w-48" />
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <Skeleton className="h-32" />
+                        <Skeleton className="h-32" />
+                    </div>
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-14" />
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    if (!vestoUser) return null;
 
     return (
         <DashboardLayout>
-            <div className="space-y-12 pb-10">
-                {/* Header */}
-                <div>
-                    <h1 className="text-4xl font-light tracking-tight">{t("overview.title")}</h1>
-                    <p className="text-sm text-muted-foreground mt-2">{t("overview.subtitle")}</p>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-8 max-w-4xl"
+            >
+                <WelcomeHeader user={vestoUser} />
+
+                <div className="grid gap-6 md:grid-cols-2">
+                    <WardrobeSummary userId={vestoUser.uid} />
+                    <TodayWeatherSummary city={vestoUser.location} />
                 </div>
 
-                {/* 4 Stat Cards */}
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    {STATS.map((stat, i) => {
-                        const Icon = stat.icon;
-                        return (
-                            <motion.div
-                                key={stat.labelKey}
-                                initial={{ opacity: 0, y: 16 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-                            >
-                                <Card className="hover:border-accent/40 transition-colors bg-card/50 backdrop-blur-sm border-border/60">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-                                            {t(stat.labelKey as Parameters<typeof t>[0])}
-                                        </CardTitle>
-                                        <Icon size={16} className="text-muted-foreground/60" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-3xl font-light">{stat.value}</div>
-                                        <p className="text-xs text-muted-foreground mt-2">{stat.increment}</p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        );
-                    })}
-                </div>
+                <RecentOutfits userId={vestoUser.uid} />
 
-                {/* Recent Activities */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.6 }}
-                >
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-light">{t("activity.title")}</h2>
-                        <div className="rounded-xl border border-border/60 bg-card/30 backdrop-blur-sm overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-muted/30">
-                                    <TableRow className="hover:bg-transparent">
-                                        <TableHead className="w-[200px] text-xs font-semibold uppercase tracking-wider text-muted-foreground h-11">
-                                            {t("activity.columns.user")}
-                                        </TableHead>
-                                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                            {t("activity.columns.action")}
-                                        </TableHead>
-                                        <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                            {t("activity.columns.date")}
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {RECENT_ACTIVITIES.map((activity) => (
-                                        <TableRow key={activity.id} className="hover:bg-muted/40 transition-colors">
-                                            <TableCell className="font-medium text-sm py-4">
-                                                {activity.user}
-                                            </TableCell>
-                                            <TableCell className="text-sm text-foreground/80">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="truncate max-w-[300px]">
-                                                        {t(activity.actionKey as Parameters<typeof t>[0])}
-                                                    </span>
-                                                    {activity.status === "pending" && (
-                                                        <Badge variant="outline" className="border-accent/40 text-accent text-[10px] ml-2 h-4 px-1.5 py-0">
-                                                            {t("activity.badge.new")}
-                                                        </Badge>
-                                                    )}
-                                                    {activity.status === "reviewing" && (
-                                                        <Badge variant="outline" className="border-blue-500/40 text-blue-500 text-[10px] ml-2 h-4 px-1.5 py-0">
-                                                            {t("activity.badge.aiReview")}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right text-sm text-muted-foreground">
-                                                {t(activity.dateKey as Parameters<typeof t>[0])}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
+                {vestoUser.role === "stylist" && <StylistStatsPlaceholder />}
+
+                <CreateOutfitCTA />
+            </motion.div>
         </DashboardLayout>
     );
 }

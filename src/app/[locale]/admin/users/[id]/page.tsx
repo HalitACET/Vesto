@@ -69,6 +69,7 @@ export default function AdminUserDetailPage({
 
     function timeAgo(iso?: string) {
         if (!iso) return "—";
+        // eslint-disable-next-line react-hooks/purity
         const diff = Date.now() - new Date(iso).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 60) return t("timeAgo.minutes", { count: mins });
@@ -135,7 +136,7 @@ export default function AdminUserDetailPage({
     const DETAIL_STATS = [
         { key: "wardrobe", value: user.wardrobeCount ?? 0, icon: Shirt },
         { key: "outfit", value: user.outfitCount ?? 0, icon: Palette },
-        { key: "followers", value: user.followersCount ?? 0, icon: Users },
+        { key: "followers", value: user.followerCount ?? 0, icon: Users },
         { key: "following", value: user.followingCount ?? 0, icon: Users },
     ] as const;
 

@@ -30,14 +30,6 @@ export async function POST(request: NextRequest) {
 
         const role = (userSnap.data()?.role ?? "user") as UserRole;
 
-        // 3. Sadece stilist ve admin bu panele girebilir
-        if (role !== "stylist" && role !== "admin") {
-            return NextResponse.json(
-                { error: "Yetkisiz Giriş: Sadece onaylı stilistler ve yöneticiler bu panele erişebilir." },
-                { status: 403 }
-            );
-        }
-
         // 4. Session payload'ı oluştur ve base64'e encode et
         //    HTTP-only cookie olacağı için browser JS erişemez, sadece server set eder
         const payload = Buffer.from(JSON.stringify({ uid: decoded.uid, role })).toString("base64");

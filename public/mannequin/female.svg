@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 720" fill="none">
+  <!-- Female Mannequin Silhouette — Vesto Outfit Canvas -->
+  <!-- ViewBox: 400x720 | Fill: Mist #E8E8E8 | Stroke: Stone #737373 1px -->
+
+  <!-- HEAD (Y: 0–90) -->
+  <ellipse cx="200" cy="52" rx="36" ry="44" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- NECK (Y: 90–115) -->
+  <rect x="188" y="94" width="24" height="28" rx="4" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- SHOULDERS + TORSO TOP (Y: 115–240) -->
+  <!-- Collar bone area -->
+  <path d="M 188 120 Q 140 118 110 128 L 100 145 Q 95 155 98 170 L 108 220 Q 112 240 120 250 L 168 262 Q 184 266 200 266 Q 216 266 232 262 L 280 250 Q 288 240 292 220 L 302 170 Q 305 155 300 145 L 290 128 Q 260 118 212 120 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- ARMS — Left (Y: 115–400) -->
+  <path d="M 100 145 Q 85 155 78 175 L 68 260 Q 64 280 66 300 L 72 370 Q 74 390 76 400 L 86 400 Q 90 390 90 370 L 86 300 Q 86 280 90 260 L 100 175 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Left hand -->
+  <ellipse cx="81" cy="408" rx="8" ry="12" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- ARMS — Right (Y: 115–400) -->
+  <path d="M 300 145 Q 315 155 322 175 L 332 260 Q 336 280 334 300 L 328 370 Q 326 390 324 400 L 314 400 Q 310 390 310 370 L 314 300 Q 314 280 310 260 L 300 175 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Right hand -->
+  <ellipse cx="319" cy="408" rx="8" ry="12" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- WAIST (Y: 250–320) — narrower for female -->
+  <path d="M 168 262 Q 148 268 140 280 L 136 310 Q 136 326 142 338 L 154 352 Q 174 360 200 360 Q 226 360 246 352 L 258 338 Q 264 326 264 310 L 260 280 Q 252 268 232 262 Q 216 266 200 266 Q 184 266 168 262 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- HIPS (Y: 320–420) — wider for female -->
+  <path d="M 142 338 Q 118 348 108 368 L 104 400 Q 104 418 110 432 L 120 448 Q 148 462 200 462 Q 252 462 280 448 L 290 432 Q 296 418 296 400 L 292 368 Q 282 348 258 338 L 246 352 Q 226 360 200 360 Q 174 360 154 352 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- LEFT LEG (Y: 448–680) -->
+  <path d="M 148 462 Q 138 470 132 490 L 126 560 Q 124 590 126 620 L 128 660 Q 130 676 136 680 L 155 680 Q 160 676 161 660 L 162 620 Q 162 590 162 560 L 162 490 Q 164 470 168 462 Q 156 462 148 462 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Left foot -->
+  <ellipse cx="148" cy="686" rx="18" ry="8" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- RIGHT LEG (Y: 448–680) -->
+  <path d="M 252 462 Q 244 462 232 462 Q 236 470 238 490 L 238 560 Q 238 590 238 620 L 239 660 Q 240 676 245 680 L 264 680 Q 270 676 272 660 L 274 620 Q 276 590 274 560 L 268 490 Q 262 470 252 462 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Right foot -->
+  <ellipse cx="252" cy="686" rx="18" ry="8" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- SLOT ZONE GUIDES (invisible, for reference) -->
+  <!-- Accessory: Y 0-115 -->
+  <!-- Top: Y 115-330 -->
+  <!-- Bottom: Y 330-560 -->
+  <!-- Shoes: Y 560-720 -->
+</svg>

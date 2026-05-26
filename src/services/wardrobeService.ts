@@ -26,6 +26,7 @@ export interface AddItemPayload {
     brand?: string;
     price?: number;
     notes?: string;
+    isPublic?: boolean;
 }
 
 export async function addItem(payload: AddItemPayload): Promise<string> {
@@ -43,6 +44,7 @@ export async function addItem(payload: AddItemPayload): Promise<string> {
         price: payload.price,
         notes: payload.notes,
         isFavorite: false,
+        isPublic: payload.isPublic ?? false,
         wearCount: 0,
     });
 

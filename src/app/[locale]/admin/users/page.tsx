@@ -32,7 +32,6 @@ function getInitials(name: string) {
 
 export default function AdminUsersPage() {
     const t = useTranslations("adminUsers");
-    const tAdmin = useTranslations("admin");
 
     const [users, setUsers] = useState<VestoUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -45,6 +44,7 @@ export default function AdminUsersPage() {
 
     function timeAgo(iso?: string) {
         if (!iso) return "—";
+        // eslint-disable-next-line react-hooks/purity
         const diff = Date.now() - new Date(iso).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 60) return t("timeAgo.minutes", { count: mins });

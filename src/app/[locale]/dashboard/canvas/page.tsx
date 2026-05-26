@@ -2,26 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useWardrobe } from "@/hooks/useWardrobe";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
     DndContext,
     DragEndEvent,
     DragOverlay,
     DragStartEvent,
-    useDraggable,
-    useDroppable,
     type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { Sparkles, Save, Trash2, Search } from "lucide-react";
-import { createOutfitAction } from "@/app/actions/outfitActions";
+import { Save, Trash2, Sparkles, User } from "lucide-react";
+
+import { DashboardLayout }       from "@/components/layout/DashboardLayout";
+import { MannequinCanvas, getMannequinType, EMPTY_SLOTS } from "@/components/canvas/MannequinCanvas";
+import { WardrobePickerSidebar } from "@/components/canvas/WardrobePickerSidebar";
+import { isValidForSlot }        from "@/components/canvas/SlotRegion";
+import { Button }                from "@/components/ui/button";
+import { Badge }                 from "@/components/ui/badge";
+import { Input }                 from "@/components/ui/input";
+import { Label }                 from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useWardrobe }           from "@/hooks/useWardrobe";
+import { useAuth }               from "@/hooks/useAuth";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+
 import type {
     WardrobeItem,
     OccasionTag,
@@ -30,165 +33,94 @@ import type {
     CanvasLayoutItem,
     OutfitItemSnapshot,
 } from "@/types";
+import type { SlotType }                     from "@/components/canvas/SlotRegion";
+import type { MannequinType, SlotState }     from "@/components/canvas/MannequinCanvas";
 
-// ── Draggable item from picker ────────────────────────────────────────────────
+// ── Slot pozisyon → canvas koordinat çevirisi ─────────────────────────────────
+// Firestore'a yazılan canvasLayout, slot ordinal olarak saklanır
 
-function DraggablePickerItem({ item }: { item: WardrobeItem }) {
-    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-        id: `picker-${item.id}`,
-        data: { item },
-    });
-
-    return (
-        <div
-            ref={setNodeRef}
-            {...listeners}
-            {...attributes}
-            className={`cursor-grab active:cursor-grabbing rounded-lg overflow-hidden border border-border aspect-square transition-opacity ${
-                isDragging ? "opacity-40" : "hover:border-accent/40"
-            }`}
-        >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
-        </div>
-    );
-}
-
-// ── Canvas drop zone ──────────────────────────────────────────────────────────
-
-interface CanvasItem {
-    item: WardrobeItem;
-    x: number;
-    y: number;
-    id: string;
-}
-
-function CanvasZone({
-    canvasItems,
-    onRemove,
-}: {
-    canvasItems: CanvasItem[];
-    onRemove: (id: string) => void;
-}) {
-    const t = useTranslations("canvas");
-    const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
-
-    return (
-        <div
-            ref={setNodeRef}
-            className={`relative h-full w-full rounded-2xl border-2 border-dashed transition-colors ${
-                isOver ? "border-accent bg-accent/5" : "border-border bg-muted/30"
-            }`}
-        >
-            {canvasItems.length === 0 && !isOver && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <Sparkles size={32} className="text-muted-foreground/30 mb-3" />
-                    <p className="text-muted-foreground text-sm">{t("canvasEmpty")}</p>
-                </div>
-            )}
-            {canvasItems.map((ci) => (
-                <div
-                    key={ci.id}
-                    className="group absolute"
-                    style={{ left: ci.x, top: ci.y, width: 120 }}
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={ci.item.imageUrl}
-                        alt={ci.item.name}
-                        className="rounded-lg object-cover w-full aspect-[3/4] border border-border shadow-md"
-                    />
-                    <button
-                        onClick={() => onRemove(ci.id)}
-                        className="absolute -top-2 -right-2 rounded-full bg-destructive text-destructive-foreground p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                        <Trash2 size={10} />
-                    </button>
-                </div>
-            ))}
-        </div>
-    );
-}
+const SLOT_ORDINAL: Record<SlotType, number> = {
+    accessory: 0,
+    top:       1,
+    bottom:    2,
+    shoes:     3,
+};
 
 // ── Save Modal ────────────────────────────────────────────────────────────────
 
-const OCCASION_VALUES: OccasionTag[] = ["casual", "formal", "business", "sporty", "evening", "beach"];
-const SEASON_VALUES: OutfitSeason[] = ["spring", "summer", "fall", "winter"];
+const OCCASION_VALUES: OccasionTag[]  = ["casual", "formal", "business", "sporty", "evening", "beach"];
+const SEASON_VALUES:   OutfitSeason[] = ["spring", "summer", "fall", "winter"];
 
 interface SaveModalProps {
-    open: boolean;
-    onClose: () => void;
-    canvasItems: CanvasItem[];
-    onSaved: (outfitId: string) => void;
+    open:      boolean;
+    onClose:   () => void;
+    slots:     SlotState;
+    onSaved:   (outfitId: string) => void;
+    vestoUser: any;
 }
 
-function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
-    const { vestoUser } = useAuth();
-    const t = useTranslations("canvas");
+function SaveModal({ open, onClose, slots, onSaved, vestoUser }: SaveModalProps) {
+    const t       = useTranslations("canvas");
     const tCommon = useTranslations("common");
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [occasion, setOccasion] = useState<OccasionTag | null>(null);
-    const [seasons, setSeasons] = useState<OutfitSeason[]>([]);
+
+    const [name,       setName]       = useState("");
+    const [description,setDescription]= useState("");
+    const [occasion,   setOccasion]   = useState<OccasionTag | null>(null);
+    const [seasons,    setSeasons]    = useState<OutfitSeason[]>([]);
     const [visibility, setVisibility] = useState<OutfitVisibility>("private");
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+    const [error,      setError]      = useState<string | null>(null);
+    const [isPending,  startTransition] = useTransition();
+
+    const filledSlots = Object.entries(slots).filter(([, item]) => item !== null) as [SlotType, WardrobeItem][];
+    const itemCount   = filledSlots.length;
 
     function toggleSeason(s: OutfitSeason) {
-        setSeasons((prev) =>
-            prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-        );
+        setSeasons((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
     }
 
     function handleSubmit() {
-        if (!name.trim()) { setError(t("saveModal.nameRequired")); return; }
-        if (canvasItems.length === 0) { setError(t("saveModal.itemsRequired")); return; }
+        if (!name.trim())   { setError(t("saveModal.nameRequired"));  return; }
+        if (itemCount === 0){ setError(t("saveModal.itemsRequired")); return; }
+        if (!vestoUser) { setError("Önce giriş yapmalısınız"); return; }
         setError(null);
 
-        const canvasLayout: CanvasLayoutItem[] = canvasItems.map((ci, index) => ({
-            itemId: ci.item.id,
-            x: ci.x,
-            y: ci.y,
-            scale: 1,
-            rotation: 0,
-            zIndex: index + 1,
-        }));
-
-        const itemSnapshots: OutfitItemSnapshot[] = canvasItems.map((ci) => ({
-            id: ci.item.id,
-            imageUrl: ci.item.imageUrl,
-            category: ci.item.category,
-            dominantColor: ci.item.color[0] ?? "#000000",
-        }));
-
         startTransition(async () => {
-            const res = await createOutfitAction({
-                name,
-                description: description || undefined,
-                canvasLayout,
-                itemSnapshots,
-                occasion,
-                season: seasons,
-                visibility,
-            });
-
-            if (res.ok && res.outfitId) {
-                onSaved(res.outfitId);
+            try {
+                const outfitData = {
+                    userId: vestoUser.uid,
+                    name: name.trim() || 'Yeni Kombin',
+                    items: {
+                        topId: slots.top?.id || null,
+                        bottomId: slots.bottom?.id || null,
+                        shoesId: slots.shoes?.id || null,
+                        accessoryId: slots.accessory?.id || null,
+                    },
+                    tags: [],
+                    createdAt: serverTimestamp(),
+                    lastWorn: null,
+                    wearCount: 0,
+                    isFavorite: false,
+                    isArchived: false,
+                };
+                
+                const docRef = await addDoc(collection(db, 'outfits'), outfitData);
+                onSaved(docRef.id);
                 onClose();
-                setName("");
-                setDescription("");
-                setOccasion(null);
-                setSeasons([]);
-                setVisibility("private");
-            } else {
-                setError(res.error ?? t("saveModal.saveError"));
+                setName(""); setDescription(""); setOccasion(null); setSeasons([]); setVisibility("private");
+            } catch (err: any) {
+                console.error('Save outfit error:', err);
+                if (err.code === 'permission-denied') {
+                    setError('Yetki hatası. Lütfen tekrar giriş yapın.');
+                } else {
+                    setError('Kombin kaydedilemedi. Tekrar deneyin.');
+                }
             }
         });
     }
 
     const visibilityLabels: Record<OutfitVisibility, string> = {
-        private: t("saveModal.visibilityPrivate"),
-        public: t("saveModal.visibilityPublic"),
+        private:   t("saveModal.visibilityPrivate"),
+        public:    t("saveModal.visibilityPublic"),
         followers: t("saveModal.visibilityFollowers"),
     };
 
@@ -199,8 +131,7 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                     <DialogTitle>{t("saveModal.title")}</DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-5 py-2">
-                    {/* Name */}
+                <div className="space-y-4 py-2">
                     <div>
                         <Label htmlFor="outfit-name" className="text-xs">
                             {t("saveModal.name")} <span className="text-destructive">*</span>
@@ -215,7 +146,6 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                         />
                     </div>
 
-                    {/* Description */}
                     <div>
                         <Label htmlFor="outfit-desc" className="text-xs">{t("saveModal.description")}</Label>
                         <textarea
@@ -294,9 +224,9 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                     <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
                         <p className="text-xs text-muted-foreground">
                             <span className="font-medium text-foreground">
-                                {t("saveModal.summary", { count: canvasItems.length })}
+                                {t("saveModal.summary", { count: itemCount })}
                             </span>
-                            {(vestoUser?.role === "admin" || vestoUser?.role === "stylist") && " — Week 10"}
+                            {" "}kaydedilecek
                         </p>
                     </div>
 
@@ -307,7 +237,7 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
                     <Button variant="ghost" onClick={onClose} disabled={isPending}>
                         {tCommon("cancel")}
                     </Button>
-                    <Button onClick={handleSubmit} disabled={isPending || canvasItems.length === 0}>
+                    <Button onClick={handleSubmit} disabled={isPending || itemCount === 0}>
                         {isPending ? t("saveModal.saving") : t("saveModal.saveButton")}
                     </Button>
                 </DialogFooter>
@@ -316,20 +246,28 @@ function SaveModal({ open, onClose, canvasItems, onSaved }: SaveModalProps) {
     );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Main Canvas Page ──────────────────────────────────────────────────────────
 
 export default function CanvasPage() {
-    const { items, loading } = useWardrobe();
-    const t = useTranslations("canvas");
-    const [canvasItems, setCanvasItems] = useState<CanvasItem[]>([]);
-    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-    const [search, setSearch] = useState("");
-    const [saveModalOpen, setSaveModalOpen] = useState(false);
-    const [savedToast, setSavedToast] = useState<string | null>(null);
+    const { items, loading }     = useWardrobe();
+    const { vestoUser }          = useAuth();
 
-    const filtered = items.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const [slots,         setSlots]         = useState<SlotState>(EMPTY_SLOTS);
+    const [activeId,      setActiveId]      = useState<UniqueIdentifier | null>(null);
+    const [saveModalOpen, setSaveModalOpen] = useState(false);
+    const [savedToast,    setSavedToast]    = useState<string | null>(null);
+
+    // Mannequin tipini kullanıcı cinsiyetinden belirle
+    const mannequinType: MannequinType = getMannequinType(vestoUser?.gender);
+
+    // Sürüklenen öğeyi bul (DragOverlay için)
+    const activeItem = activeId
+        ? items.find((i) => `wardrobe-${i.id}` === String(activeId))
+        : null;
+
+    const filledCount = Object.values(slots).filter(Boolean).length;
+
+    // ── Drag handlers ─────────────────────────────────────────────────────────
 
     function handleDragStart(event: DragStartEvent) {
         setActiveId(event.active.id);
@@ -337,34 +275,41 @@ export default function CanvasPage() {
 
     function handleDragEnd(event: DragEndEvent) {
         setActiveId(null);
-        if (event.over?.id === "canvas" && event.active.data.current?.item) {
-            const item = event.active.data.current.item as WardrobeItem;
-            const rect = event.over.rect;
-            setCanvasItems((prev) => [
-                ...prev,
-                {
-                    id: `${item.id}-${Date.now()}`,
-                    item,
-                    x: Math.max(0, (rect?.width ?? 600) / 2 - 60),
-                    y: Math.max(0, (rect?.height ?? 500) / 2 - 80),
-                },
-            ]);
-        }
+
+        const overId = event.over?.id as string | undefined;
+        if (!overId?.startsWith("slot-")) return;
+
+        const slotType = overId.replace("slot-", "") as SlotType;
+        const item     = event.active.data.current?.item as WardrobeItem | undefined;
+        if (!item) return;
+
+        // Kategori validasyonu — uyumsuz kategori → sessizce reddet
+        if (!isValidForSlot(item.category, slotType)) return;
+
+        setSlots((prev) => ({ ...prev, [slotType]: item }));
+    }
+
+    function handleSlotClear(slot: SlotType) {
+        setSlots((prev) => ({ ...prev, [slot]: null }));
+    }
+
+    function handleClearAll() {
+        setSlots(EMPTY_SLOTS);
     }
 
     function handleSaved(outfitId: string) {
-        setCanvasItems([]);
-        setSavedToast(t("savedToast", { id: outfitId.slice(0, 8) }));
+        setSlots(EMPTY_SLOTS);
+        setSavedToast(`Kombin kaydedildi! #${outfitId.slice(0, 8)}`);
         setTimeout(() => setSavedToast(null), 4000);
     }
 
-    const activeItem = activeId && items.find((i) => `picker-${i.id}` === activeId);
+    // ── Render ────────────────────────────────────────────────────────────────
 
     return (
         <DashboardLayout>
             {/* Success toast */}
             {savedToast && (
-                <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-border bg-background px-4 py-3 text-sm shadow-lg">
+                <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-border bg-background px-4 py-3 text-sm shadow-lg animate-in slide-in-from-bottom-2">
                     ✓ {savedToast}
                 </div>
             )}
@@ -372,95 +317,84 @@ export default function CanvasPage() {
             <SaveModal
                 open={saveModalOpen}
                 onClose={() => setSaveModalOpen(false)}
-                canvasItems={canvasItems}
+                slots={slots}
                 onSaved={handleSaved}
+                vestoUser={vestoUser}
             />
 
             <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                <div className="flex h-[calc(100vh-8rem)] gap-6">
-                    {/* Left — item picker */}
-                    <aside className="flex w-64 flex-shrink-0 flex-col gap-4">
-                        <div>
-                            <h2 className="text-xl font-light mb-1">{t("title")}</h2>
-                            <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
-                        </div>
+                <div className="flex h-[calc(100vh-6rem)] gap-6 overflow-hidden">
 
-                        <div className="relative">
-                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                placeholder={t("searchPlaceholder")}
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-8 text-sm"
-                            />
-                        </div>
+                    {/* Sol — Wardrobe Picker */}
+                    <WardrobePickerSidebar items={items} loading={loading} />
 
-                        <div className="flex-1 overflow-y-auto">
-                            {loading ? (
-                                <div className="grid grid-cols-2 gap-2">
-                                    {Array.from({ length: 6 }).map((_, i) => (
-                                        <Skeleton key={i} className="aspect-square rounded-lg" />
-                                    ))}
-                                </div>
-                            ) : filtered.length === 0 ? (
-                                <p className="text-center text-sm text-muted-foreground py-8">
-                                    {t("noItems")}
+                    {/* Orta — Mannequin Canvas */}
+                    <div className="flex flex-1 flex-col gap-3 overflow-hidden">
+                        {/* Toolbar */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <div>
+                                <h1 className="text-lg font-light tracking-wide">Stylist Canvas</h1>
+                                <p className="text-xs text-muted-foreground">
+                                    Kıyafetleri slot&apos;lara sürükleyerek kombin oluştur
                                 </p>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-2">
-                                    {filtered.map((item) => (
-                                        <DraggablePickerItem key={item.id} item={item} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </aside>
+                            </div>
 
-                    {/* Right — canvas */}
-                    <div className="flex flex-1 flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="gap-1 border-accent/30 text-accent text-xs">
-                                <Sparkles size={10} />
-                                {t("itemCount", { count: canvasItems.length })}
-                            </Badge>
-                            <Button
-                                size="sm"
-                                className="ml-auto gap-1.5"
-                                disabled={canvasItems.length === 0}
-                                onClick={() => setSaveModalOpen(true)}
-                            >
-                                <Save size={14} />
-                                {t("save")}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={canvasItems.length === 0}
-                                onClick={() => setCanvasItems([])}
-                            >
-                                <Trash2 size={14} className="mr-1.5" />
-                                {t("clear")}
-                            </Button>
+                            <div className="ml-auto flex items-center gap-2">
+                                {/* Mannequin tipi badge */}
+                                <Badge variant="outline" className="gap-1 text-xs border-border/50">
+                                    <User size={9} />
+                                    {mannequinType}
+                                </Badge>
+
+                                {/* Dolu slot sayısı */}
+                                <Badge variant="outline" className="gap-1 text-xs border-accent/30 text-accent">
+                                    <Sparkles size={9} />
+                                    {filledCount} / 4
+                                </Badge>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={filledCount === 0}
+                                    onClick={handleClearAll}
+                                    className="gap-1.5 text-xs h-8"
+                                >
+                                    <Trash2 size={13} />
+                                    Temizle
+                                </Button>
+
+                                <Button
+                                    size="sm"
+                                    disabled={filledCount === 0}
+                                    onClick={() => setSaveModalOpen(true)}
+                                    className="gap-1.5 text-xs h-8"
+                                >
+                                    <Save size={13} />
+                                    Kombini Kaydet
+                                </Button>
+                            </div>
                         </div>
-                        <div className="flex-1">
-                            <CanvasZone
-                                canvasItems={canvasItems}
-                                onRemove={(id) =>
-                                    setCanvasItems((prev) => prev.filter((ci) => ci.id !== id))
-                                }
+
+                        {/* Canvas alanı — scroll edilebilir */}
+                        <div className="flex-1 overflow-y-auto flex justify-center py-4">
+                            <MannequinCanvas
+                                slots={slots}
+                                mannequinType={mannequinType}
+                                onClear={handleSlotClear}
                             />
                         </div>
                     </div>
                 </div>
 
-                <DragOverlay>
+                {/* Drag overlay — sürüklenirken gösteri */}
+                <DragOverlay dropAnimation={null}>
                     {activeItem && (
-                        <div className="w-24 rounded-lg overflow-hidden shadow-2xl opacity-90 rotate-3">
+                        <div className="w-20 rounded-xl overflow-hidden shadow-2xl opacity-90 rotate-3 border border-border">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src={activeItem.imageUrl}
-                                alt={activeItem.name}
-                                className="w-full aspect-[3/4] object-cover"
+                                src={activeItem.bgRemovedUrl ?? activeItem.imageUrl ?? ""}
+                                alt={activeItem.name ?? ""}
+                                className={`w-full aspect-square ${activeItem.bgRemovedUrl ? "object-contain" : "object-cover"}`}
                             />
                         </div>
                     )}

@@ -30,6 +30,8 @@ export function middleware(request: NextRequest) {
 
     const isAuthPage = strippedPath.startsWith("/login") || strippedPath.startsWith("/register");
     const isDashboardPage = strippedPath.startsWith("/dashboard");
+    const isCommunityPage = strippedPath === "/dashboard/community";
+    const isProtectedDashboardPage = isDashboardPage && !isCommunityPage;
     const isAdminPage = strippedPath.startsWith("/admin");
 
     const raw = request.cookies.get(SESSION_COOKIE)?.value;
@@ -44,7 +46,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Unauthenticated user trying to access protected pages
-    if (!session && (isDashboardPage || isAdminPage)) {
+    if (!session && (isProtectedDashboardPage || isAdminPage)) {
         return redirectTo("/login");
     }
 

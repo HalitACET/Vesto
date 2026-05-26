@@ -2,99 +2,154 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Helper functions ──────────────────────────────────────────────────────
-
-    function isAuthenticated() {
+    // ── Helper functions ──────────────────────────────────────
+    function isAuth() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function uid() {
+      return request.auth.uid;
     }
 
-    function getUserRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(uid())).data.role;
     }
 
     function isAdmin() {
-      return isAuthenticated() && getUserRole() == 'admin';
+      return isAuth() && userRole() == 'admin';
     }
 
     function isStylist() {
-      return isAuthenticated() && getUserRole() in ['stylist', 'admin'];
+      return isAuth() && userRole() in ['stylist', 'admin'];
     }
 
-    // ── Users ─────────────────────────────────────────────────────────────────
+    // ── Users ────────────────────────────────────────────────
     match /users/{userId} {
-      // Anyone authenticated can read public profiles
-      allow read: if isAuthenticated();
-      // Only the user themselves can create/update their own doc
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow read: if true;
+      // Owner can create their own doc; admin can update any user
+      allow create: if isAuth() && uid() == userId;
+      allow update: if isAuth() && (
+        // Case 1: Owner updates their doc
+        uid() == userId ||
+        // Case 2: Other authenticated users update followerCount when following/unfollowing
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['followerCount'])) ||
+        isAdmin()
+      );
       allow delete: if isAdmin();
     }
 
-    // ── Wardrobe Items ────────────────────────────────────────────────────────
+    // ── Usernames (Unique Check) ─────────────────────────────
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if isAuth() && request.resource.data.uid == uid();
+      allow update: if isAuth() && request.resource.data.uid == uid();
+      allow delete: if isAuth() && resource.data.uid == uid();
+    }
+
+    // ── Wardrobe Items ────────────────────────────────────────
+    // adminReview field: client'tan yazılmasını engellemek için
+    // Server Action (Admin SDK) kullanır — Admin SDK rules'ı bypass eder,
+    // dolayısıyla sadece server tarafından yazılabilir.
+    // Client update'lerinde adminReview değişmemeli:
     match /wardrobeItems/{itemId} {
-      // Users access their own items; stylists and admins can read any item
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isStylist());
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow delete: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+      // Sahip veya Stilist: tam okuma. Herkes (misafirler dahil): isPublic == true.
+      allow read: if (resource.data.isPublic == true)
+        || (isAuth() && (
+          resource.data.userId == uid() ||
+          isStylist()
+        ));
+      allow create: if isAuth() && request.resource.data.userId == uid();
+      // Kendi item'ını güncelleyebilir AMA adminReview alanını set edemez
+      allow update: if isAuth()
+        && resource.data.userId == uid()
+        && !('adminReview' in request.resource.data.diff(resource.data).affectedKeys())
+        && !('aiAnalysis' in request.resource.data.diff(resource.data).affectedKeys());
+      // Admin her item'ı güncelleyebilir (adminReview dahil)
+      allow update: if isAdmin();
+      allow delete: if isAuth() && resource.data.userId == uid();
     }
 
-    // ── Outfits ───────────────────────────────────────────────────────────────
+    // ── Outfits ───────────────────────────────────────────────
+    // Stilist bir müşteri için kombin oluşturabilir:
+    //   userId = customerUid, recommendedBy = stylistUid, source = 'stylist_recommendation'
+    // Müşteri kendi kombinini yönetebilir (status güncellemesi: kabul/red — mobile Hafta 10)
     match /outfits/{outfitId} {
-      // Public outfits are readable by all authenticated users
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid ||
-         resource.data.isPublic == true ||
-         isStylist());
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isStylist());
-      allow delete: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isAuth()
+        && (resource.data.userId == uid()
+          || resource.data.recommendedBy == uid()
+          || resource.data.visibility == 'public'
+          || isStylist());
+      // Kendi adına kombin oluşturabilir
+      allow create: if isAuth() && request.resource.data.userId == uid();
+      // Stilist başka kullanıcı için kombin oluşturabilir (recommendedBy = kendi UID'i olmalı)
+      allow create: if isStylist()
+        && request.resource.data.recommendedBy == uid()
+        && request.resource.data.source == 'stylist_recommendation';
+      // Sahibi veya stilist güncelleyebilir
+      allow update: if isAuth()
+        && (resource.data.userId == uid() || resource.data.recommendedBy == uid() || isAdmin());
+      allow delete: if isAuth()
+        && (resource.data.userId == uid() || isAdmin());
     }
 
-    // ── Forum Posts ───────────────────────────────────────────────────────────
+    // ── Forum Posts ───────────────────────────────────────────
     match /forumPosts/{postId} {
-      // Non-moderated posts are public to authenticated users
-      allow read: if isAuthenticated() && resource.data.isModerated == false;
-      allow create: if isAuthenticated() &&
-        request.resource.data.authorId == request.auth.uid;
-      // Only moderators (stylist+) or the author can update
-      allow update: if isAuthenticated() &&
-        (resource.data.authorId == request.auth.uid || isStylist());
-      allow delete: if isAdmin();
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.authorId
+        && request.resource.data.caption.size() <= 280;
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.authorId ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'commentCount']))
+      );
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.authorId;
     }
 
-    // ── Forum Comments ────────────────────────────────────────────────────────
+    // ── Forum Comments ────────────────────────────────────────
     match /forumComments/{commentId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.authorId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        resource.data.authorId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        (resource.data.authorId == request.auth.uid || isAdmin());
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.authorId
+        && request.resource.data.text.size() <= 280;
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.authorId ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount']))
+      );
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.authorId;
     }
 
-    // ── Style Recommendations (stylist → user) ────────────────────────────────
-    match /styleRecommendations/{recId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.stylistId == request.auth.uid ||
-         resource.data.userId == request.auth.uid);
-      allow create: if isStylist() &&
-        request.resource.data.stylistId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow delete: if isStylist();
+    // ── Forum Likes ───────────────────────────────────────────
+    // Document ID format: {postId}_{userId}
+    match /forumLikes/{likeId} {
+      allow read: if true;
+      // create: validate that the doc belongs to the requesting user
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      // delete: resource.data exists (unlike request.resource which is null on delete)
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Comment Likes ───────────────────────────────────────────
+    // Document ID format: {commentId}_{userId}
+    match /commentLikes/{likeId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── User Follows ───────────────────────────────────────────
+    match /userFollows/{followId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && followId == (request.auth.uid + '_' + request.resource.data.followingId)
+        && request.resource.data.followerId == request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.followerId == request.auth.uid;
     }
   }
 }

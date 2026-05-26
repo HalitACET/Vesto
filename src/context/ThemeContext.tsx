@@ -17,19 +17,16 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>("light");
-
-    // İlk yüklemede localStorage veya sistem tercihini oku
-    useEffect(() => {
+    const [theme, setThemeState] = useState<Theme>(() => {
+        if (typeof window === "undefined") return "light";
         const stored = localStorage.getItem("vesto-theme") as Theme | null;
-        if (stored) {
-            setThemeState(stored);
-            document.documentElement.classList.toggle("dark", stored === "dark");
-        } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            setThemeState("dark");
-            document.documentElement.classList.add("dark");
-        }
-    }, []);
+        if (stored) return stored;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    });
+
+    useEffect(() => {
+        document.documentElement.classList.toggle("dark", theme === "dark");
+    }, [theme]);
 
     function setTheme(newTheme: Theme) {
         setThemeState(newTheme);

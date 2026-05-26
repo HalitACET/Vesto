@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn, signOut } from "@/lib/firebase/auth";
+import { getUser } from "@/lib/firebase/firestore";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -25,6 +26,9 @@ export default function LoginPage() {
         setError(null);
         try {
             const user = await signIn(email, password);
+            
+            // Check profile setup status
+            const profile = await getUser(user.uid);
 
             const idToken = await user.getIdToken();
             const res = await fetch("/api/auth/session", {
@@ -39,7 +43,11 @@ export default function LoginPage() {
                 throw new Error(data.error ?? t("loginFailed"));
             }
 
-            router.push("/dashboard");
+            if (profile && !profile.profileSetupCompleted) {
+                router.push("/profile-setup");
+            } else {
+                router.push("/dashboard");
+            }
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : t("loginFailed"));
         } finally {

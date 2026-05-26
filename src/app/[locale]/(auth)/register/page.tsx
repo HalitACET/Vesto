@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { signUp, signInWithGoogle } from "@/lib/firebase/auth";
+import { getUser } from "@/lib/firebase/firestore";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -26,8 +27,14 @@ export default function RegisterPage() {
         setLoading(true);
         setError(null);
         try {
-            await signUp(email, password, name);
-            router.push("/dashboard");
+            const user = await signUp(email, password, name);
+            const idToken = await user.getIdToken();
+            await fetch("/api/auth/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken }),
+            });
+            router.push("/profile-setup");
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : t("registerFailed"));
         } finally {
@@ -38,8 +45,20 @@ export default function RegisterPage() {
     async function handleGoogle() {
         setLoading(true);
         try {
-            await signInWithGoogle();
-            router.push("/dashboard");
+            const user = await signInWithGoogle();
+            const profile = await getUser(user.uid);
+            const idToken = await user.getIdToken();
+            await fetch("/api/auth/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken }),
+            });
+
+            if (profile && !profile.profileSetupCompleted) {
+                router.push("/profile-setup");
+            } else {
+                router.push("/dashboard");
+            }
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : t("googleFailed"));
         } finally {

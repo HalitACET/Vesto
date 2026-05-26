@@ -8,7 +8,7 @@ import {
     updateProfile,
     type User,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./config";
 
 const googleProvider = new GoogleAuthProvider();
@@ -31,9 +31,11 @@ export async function signUp(
         email,
         displayName,
         role: "user",
+        isStylistModeActive: false,
+        profileSetupCompleted: false,
         wardrobeCount: 0,
         outfitCount: 0,
-        followersCount: 0,
+        followerCount: 0,
         followingCount: 0,
         createdAt: serverTimestamp(),
     });
@@ -49,19 +51,26 @@ export async function signIn(email: string, password: string): Promise<User> {
 export async function signInWithGoogle(): Promise<User> {
     const result = await signInWithPopup(auth, googleProvider);
 
-    // Upsert user document
-    await setDoc(
-        doc(db, "users", result.user.uid),
-        {
+    // Check if user exists to avoid overwriting setup status
+    const userSnap = await getDoc(doc(db, "users", result.user.uid));
+    
+    if (!userSnap.exists()) {
+        await setDoc(doc(db, "users", result.user.uid), {
             uid: result.user.uid,
             email: result.user.email,
             displayName: result.user.displayName,
             photoURL: result.user.photoURL,
             role: "user",
+            isStylistModeActive: false,
+            profileSetupCompleted: false,
             createdAt: serverTimestamp(),
-        },
-        { merge: true }
-    );
+        });
+    } else {
+        await updateDoc(doc(db, "users", result.user.uid), {
+            photoURL: result.user.photoURL, // Sync photo
+            lastLogin: serverTimestamp(),
+        });
+    }
 
     return result.user;
 }

@@ -22,6 +22,7 @@ export function useWeather(city = "Istanbul") {
 
     useEffect(() => {
         if (!API_KEY) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setError("OpenWeather API key not configured");
             setLoading(false);
             return;

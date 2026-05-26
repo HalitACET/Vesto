@@ -1,11 +1,14 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase/auth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,7 +31,12 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
     const pathname = usePathname();
     const locale = useLocale() as Locale;
     const { theme, toggleTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
     const t = useTranslations("sidebar");
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
     const tAuth = useTranslations("auth");
 
     function switchLocale(newLocale: Locale) {
@@ -42,19 +50,35 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
         .toUpperCase()
         .slice(0, 2) ?? "V";
 
-    const NAV_LINKS = [
-        { href: "/dashboard", label: t("dashboard") },
-        { href: "/dashboard/wardrobe", label: t("wardrobe") },
-        { href: "/dashboard/canvas", label: t("canvas") },
-        { href: "/dashboard/community", label: t("community") },
-    ];
+    const role = vestoUser?.role ?? 'guest';
+
+    const NAV_LINKS = (() => {
+        if (role === 'guest') {
+            return [
+                { href: "/dashboard/community", label: t("community") },
+            ];
+        }
+
+        const base = [
+            { href: "/dashboard", label: t("dashboard") },
+            { href: "/dashboard/wardrobe", label: t("wardrobe") },
+            { href: "/dashboard/canvas", label: t("canvas") },
+            { href: "/dashboard/community", label: t("community") },
+        ];
+
+        if (role === "stylist") {
+            base.push({ href: "/dashboard/clients", label: t("clients") });
+        }
+
+        return base;
+    })();
 
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-6">
                 {/* Left: menu + logo */}
                 <div className="flex items-center gap-4">
-                    {onMenuToggle && (
+                    {onMenuToggle && firebaseUser && (
                         <button
                             onClick={onMenuToggle}
                             className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors lg:hidden"
@@ -76,12 +100,16 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                 </div>
 
                 {/* Center: nav links (desktop) */}
-                <nav className="hidden items-center gap-8 md:flex">
+                <nav className="hidden items-center gap-6 md:flex">
                     {NAV_LINKS.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            className={`text-sm transition-colors ${
+                                pathname === item.href
+                                    ? "text-foreground font-medium"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
                         >
                             {item.label}
                         </Link>
@@ -108,59 +136,73 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                     </div>
 
                     {/* Dark mode toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        aria-label="Toggle dark mode"
-                        className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    >
-                        {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
-                    </button>
+                    {mounted && (
+                        <button
+                            onClick={toggleTheme}
+                            aria-label="Toggle dark mode"
+                            className="hidden sm:flex rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                            {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+                        </button>
+                    )}
 
                     {loading ? (
                         <Skeleton className="h-8 w-8 rounded-full" />
                     ) : firebaseUser ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger className="rounded-full ring-2 ring-border hover:ring-accent transition-all outline-none">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={firebaseUser.photoURL ?? undefined} />
-                                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                                        {initials}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <div className="px-3 py-2">
-                                    <p className="text-sm font-medium">{vestoUser?.displayName}</p>
-                                    <p className="text-xs text-muted-foreground capitalize">{vestoUser?.role}</p>
-                                </div>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                                    {t("dashboard")}
-                                </DropdownMenuItem>
-                                {vestoUser?.role === "admin" && (
-                                    <DropdownMenuItem onClick={() => router.push("/admin")}>
+                        <div className="flex items-center gap-3">
+                            {vestoUser?.role === "admin" && (
+                                <Link href="/admin/dashboard" className="hidden lg:block">
+                                    <Badge className="bg-orange-500 hover:bg-orange-600 border-0 cursor-pointer py-1 px-3">
                                         {t("admin")}
+                                    </Badge>
+                                </Link>
+                            )}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="rounded-full ring-2 ring-border hover:ring-accent transition-all outline-none">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={firebaseUser.photoURL ?? vestoUser?.photoUrl ?? undefined} />
+                                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                            {initials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <div className="px-3 py-2">
+                                        <p className="text-sm font-medium truncate">{vestoUser?.displayName || firebaseUser.email}</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-tight">{vestoUser?.role}</p>
+                                    </div>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+                                        {t("dashboard")}
                                     </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="text-destructive"
-                                    onClick={async () => {
-                                        await signOut();
-                                        await fetch("/api/auth/session", { method: "DELETE" });
-                                        router.push("/login");
-                                    }}
-                                >
-                                    {tAuth("logout")}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
+                                        Settings
+                                    </DropdownMenuItem>
+                                    {vestoUser?.role === "stylist" && (
+                                        <DropdownMenuItem disabled className="text-xs italic">
+                                            Stylist Profile (Coming Soon)
+                                        </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="text-destructive"
+                                        onClick={async () => {
+                                            await signOut();
+                                            await fetch("/api/auth/session", { method: "DELETE" });
+                                            router.push("/login");
+                                        }}
+                                    >
+                                        {tAuth("logout")}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" asChild>
+                            <Button variant="ghost" size="sm" asChild className="text-xs">
                                 <Link href="/login">{tAuth("login")}</Link>
                             </Button>
-                            <Button size="sm" asChild>
+                            <Button size="sm" asChild className="text-xs h-8">
                                 <Link href="/register">{tAuth("register")}</Link>
                             </Button>
                         </div>

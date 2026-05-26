@@ -75,7 +75,8 @@ function AITagValidationTab() {
         setLoading(false);
     }
 
-    useEffect(() => { void loadItems(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+    useEffect(() => { void loadItems(); }, [filter]);
 
     const displayed = lowConfidenceOnly
         ? items.filter((i) => (i.aiAnalysis?.confidence ?? 1) < 0.7)

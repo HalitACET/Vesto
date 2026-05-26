@@ -1,12 +1,12 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export type ClothingCategory =
-    | "tops"
-    | "bottoms"
+    | "tops" | "top"
+    | "bottoms" | "bottom"
     | "dresses"
     | "outerwear"
-    | "shoes"
-    | "accessories"
+    | "shoes" | "footwear"
+    | "accessories" | "accessory"
     | "bags"
     | "jewelry";
 
@@ -79,8 +79,11 @@ export interface WardrobeItem {
     userId: string;
     name: string;
     category: ClothingCategory;
+    subcategory?: string;
+    size?: string;
     imageUrl: string;
     thumbnailUrl?: string;
+    bgRemovedUrl?: string;   // Cloud Function tarafından doldurulur (PNG, transparent BG)
     brand?: string;
     color: string[];
     season: Season[];
@@ -88,6 +91,8 @@ export interface WardrobeItem {
     aiAnalysis?: AIAnalysis;
     adminReview?: AdminReview | null;  // null = not reviewed; nullable → mobile backward compat
     isFavorite: boolean;
+    isPublic: boolean;
+    isArchived?: boolean;
     wearCount: number;
     lastWornAt?: string;
     purchaseDate?: string;
@@ -147,6 +152,12 @@ export interface Outfit {
     // Legacy — kept for mobile backward compat
     likes?: number;
     isPublic?: boolean;
+    isFavorite?: boolean;
+    isArchived?: boolean;
+    wearCount?: number;
+    lastWornAt?: string;
+    lastWorn?: string;
+    tags?: string[];
     createdAt: string;
     updatedAt: string;
 }
@@ -158,14 +169,21 @@ export interface VestoUser {
     email: string;
     displayName: string;
     photoURL?: string;
+    photoUrl?: string; // Consistency with mobile requested in prompt
     role: UserRole;
     status: UserStatus;
-    bio?: string;
+    isStylistModeActive: boolean; // Hafta 12
+    profileSetupCompleted: boolean; // Hafta 8 Fix
+    gender?: string;
+    birthYear?: number;
+    bio: string;
+    username?: string;
+    wardrobePublic: boolean;
     location?: string;
     stylePreferences?: OccasionTag[];
     wardrobeCount?: number;
     outfitCount?: number;
-    followersCount?: number;
+    followerCount?: number;   // YENİ — Hafta 11b
     followingCount?: number;
     assignedStylistId?: string;
     lastActive?: string;
@@ -192,31 +210,7 @@ export interface OutfitSuggestion {
 
 // ─── Forum / Community ────────────────────────────────────────────────────────
 
-export interface ForumPost {
-    id: string;
-    authorId: string;
-    authorName: string;
-    authorPhotoURL?: string;
-    title: string;
-    content: string;
-    imageUrl?: string;
-    tags: string[];
-    likes: number;
-    comments: number;
-    isModerated: boolean;
-    isPinned: boolean;
-    createdAt: string;
-}
-
-export interface ForumComment {
-    id: string;
-    postId: string;
-    authorId: string;
-    authorName: string;
-    content: string;
-    likes: number;
-    createdAt: string;
-}
+export * from "./forum";
 
 // ─── Admin / Stylist ──────────────────────────────────────────────────────────
 

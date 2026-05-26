@@ -4,7 +4,6 @@ import { adminDb } from "@/lib/firebase/admin";
 import { getServerSession } from "@/lib/firebase/serverAuth";
 import type {
     CanvasLayoutItem,
-    ClothingCategory,
     OccasionTag,
     OutfitItemSnapshot,
     OutfitSeason,
@@ -40,10 +39,8 @@ export async function createOutfitAction(input: CreateOutfitInput): Promise<Acti
     const session = await getServerSession();
     if (!session) return { ok: false, error: "Oturum bulunamadı." };
 
-    // Sadece stilist ve admin outfit oluşturabilir
-    if (session.role !== "stylist" && session.role !== "admin") {
-        return { ok: false, error: "Yetkisiz işlem: stilist veya admin rolü gerekli." };
-    }
+    // Tüm authenticated kullanıcılar kendi kombinlerini oluşturabilir
+    // (Stilistler başkaları için de oluşturabilir — targetUserId ile)
 
     // Validasyon
     if (!input.name.trim()) return { ok: false, error: "Kombin adı zorunludur." };
@@ -80,6 +77,7 @@ export async function createOutfitAction(input: CreateOutfitInput): Promise<Acti
         likes: 0,
         isPublic: input.visibility === "public",
         aiGenerated: false,
+        isArchived: false,
         createdAt: now,
         updatedAt: now,
     };

@@ -15,6 +15,30 @@
         "error": "Hata",
         "success": "Başarılı"
     },
+    "profileSetup": {
+        "step1": {
+            "title": "Adın ne?",
+            "displayNamePlaceholder": "Adın ve soyadın",
+            "uploadAvatar": "Profil fotoğrafı yükle"
+        },
+        "step2": {
+            "title": "Biraz daha tanışalım",
+            "genderLabel": "Cinsiyet",
+            "birthYearLabel": "Doğum yılı"
+        },
+        "step3": {
+            "title": "Stil tercihlerin neler?",
+            "subtitle": "Birden fazla seçebilirsin"
+        },
+        "step4": {
+            "title": "Konumun?",
+            "cityLabel": "Şehir",
+            "cityPlaceholder": "Bursa"
+        },
+        "nextButton": "İleri",
+        "backButton": "Geri",
+        "finishButton": "Bitir"
+    },
     "auth": {
         "login": "Giriş Yap",
         "logout": "Çıkış Yap",
@@ -50,6 +74,8 @@
         "wardrobe": "Dolabım",
         "canvas": "Kombin Editörü",
         "community": "Topluluk",
+        "outfits": "Kombinlerim",
+        "profile": "Profil",
         "clients": "Müşteriler",
         "settings": "Ayarlar",
         "admin": "Yönetim",
@@ -57,9 +83,17 @@
     },
     "dashboard": {
         "overview": {
-            "title": "Genel Bakış",
-            "subtitle": "Platformdaki tüm aktiviteleri ve temel metrikleri buradan izleyebilirsiniz."
+            "title": "Dashboard",
+            "subtitle": "Kişisel stil asistanın ve gardırobun bir arada."
         },
+        "welcomeTitle": "Hoş geldin, {name}",
+        "wardrobeSummary": "{count} kıyafetin var",
+        "todaySummary": "{city}, {temp}°C, {condition}",
+        "recentOutfits": "{count} outfit oluşturdun",
+        "createOutfit": "Yeni Outfit Oluştur",
+        "emptyWardrobe": "Henüz kıyafet eklemedin. Mobile uygulamayı kullanarak başla.",
+        "stylistStatsTitle": "Stilist İstatistikleri",
+        "stylistStatsPlaceholder": "Yakında — kombin önerme özelliği geldiğinde aktifleşecek",
         "stats": {
             "totalUsers": "Toplam Kullanıcı",
             "newClothes": "Yeni Yüklenen Kıyafetler",
@@ -105,13 +139,20 @@
         "aiTagged": "AI etiketlendi",
         "categories": {
             "all": "Tümü",
+            "top": "Üst",
             "tops": "Üstler",
+            "bottom": "Alt",
             "bottoms": "Altlar",
+            "dress": "Elbise",
             "dresses": "Elbiseler",
             "outerwear": "Dış Giyim",
             "shoes": "Ayakkabılar",
-            "accessories": "Aksesuar",
-            "bags": "Çantalar"
+            "footwear": "Ayakkabı",
+            "accessory": "Aksesuar",
+            "accessories": "Aksesuarlar",
+            "bag": "Çanta",
+            "bags": "Çantalar",
+            "jewelry": "Takı"
         },
         "upload": {
             "title": "Kıyafet Ekle",
@@ -119,7 +160,10 @@
             "aiTag": "Yapay zeka renk ve kategoriyi otomatik tanımlayacak",
             "itemName": "Parça Adı",
             "itemNamePlaceholder": "Örn. Beyaz keten gömlek",
-            "analyzeButton": "Analiz Et ve Dolaba Ekle"
+            "analyzeButton": "Analiz Et ve Dolaba Ekle",
+            "category": "Kategori",
+            "subcategory": "Alt Kategori",
+            "size": "Beden (Opsiyonel)"
         }
     },
     "canvas": {
@@ -179,6 +223,22 @@
             "stylist": "Stilist",
             "user": "Kullanıcı"
         }
+    },
+    "forum": {
+        "title": "Topluluk",
+        "emptyTitle": "Henüz paylaşım yok",
+        "emptyDesc": "İlk kombini paylaşan sen ol!",
+        "share": "Forum'a Paylaş",
+        "comment": "Yorum yaz...",
+        "send": "Gönder",
+        "deletePost": "Paylaşımı Sil",
+        "likeCount": "{count} beğeni",
+        "commentCount": "{count} yorum",
+        "loginToInteract": "Beğenmek için giriş yap",
+        "shareOutfit": "Kombini Paylaş",
+        "writeCaption": "Bir şeyler yaz...",
+        "publish": "Paylaş",
+        "newPost": "Yeni Gönderi"
     },
     "admin": {
         "title": "Admin Paneli",
@@ -346,8 +406,21 @@
         },
         "profile": {
             "heading": "Profil",
-            "description": "Ad ve biyografi gibi profil bilgilerinizi güncelleyin.",
-            "comingSoon": "Yakında"
+            "description": "Ad, biyografi ve kullanıcı adı gibi profil bilgilerinizi güncelleyin.",
+            "displayName": "Görünen Ad",
+            "username": "Kullanıcı Adı (@)",
+            "bio": "Biyografi",
+            "save": "Profili Kaydet",
+            "saving": "Kaydediliyor...",
+            "success": "Profil başarıyla güncellendi!",
+            "errorTaken": "Bu kullanıcı adı zaten alınmış.",
+            "errorGeneric": "Profil güncellenirken bir hata oluştu.",
+            "privacyHeading": "Gizlilik Ayarları",
+            "privacyDesc": "Gardırop ve profil gizliliğinizi yönetin.",
+            "shareWardrobe": "Gardırobumu Paylaş",
+            "shareWardrobeDesc": "Açıksa tüm kıyafetleriniz profilinizde herkese görünür.",
+            "perItemLink": "Her kıyafet için ayrı ayarla",
+            "bioPlaceholder": "Kendinizden bahsedin (en fazla 150 karakter)..."
         },
         "notifications": {
             "heading": "Bildirimler",
@@ -394,16 +467,25 @@
         }
     },
     "outfits": {
-        "title": "Kombin Önerileri",
-        "subtitle": "Bugünkü hava durumuna ve stilinize göre AI tarafından seçilmiş kombinler.",
-        "weather": {
-            "feelsLike": "Hissedilen",
-            "humidity": "nem",
-            "unavailable": "Hava durumu kullanılamıyor — akıllı öneriler için OpenWeather API anahtarınızı ekleyin."
-        },
-        "aiMatched": "AI eşleşti",
-        "styleScore": "Stil skoru",
-        "wearThis": "Bunu giy"
+        "title": "Kombinlerim",
+        "subtitle": "{count} kombin",
+        "newOutfit": "Yeni Kombin",
+        "latestLabel": "EN YENİ KOMBİN",
+        "favoriteLabel": "FAVORİ KOMBİN",
+        "allOutfits": "Tüm Kombinler",
+        "wearCountLabel": "{count} kez giyildi",
+        "createdLabel": "{date} oluşturuldu",
+        "viewDetails": "Detayları Gör",
+        "edit": "Düzenle",
+        "favorite": "Favori",
+        "emptyTitle": "Henüz kombin oluşturmadın",
+        "emptyDescription": "Gardırobundaki kıyafetleri birleştirerek ilk kombinini yarat",
+        "createFirstOutfit": "İlk Kombini Oluştur",
+        "filterEmpty": "Bu filtreye uygun kombin yok",
+        "clearFilter": "Filtreyi Temizle",
+        "filterAll": "Tümü",
+        "filterFavorites": "Favoriler",
+        "filterRecentlyWorn": "Son Giyilen"
     },
     "landing": {
         "badge": "Yapay Zeka Destekli Moda Platformu",

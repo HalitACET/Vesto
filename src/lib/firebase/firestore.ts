@@ -32,6 +32,7 @@ export async function addWardrobeItem(
 ): Promise<string> {
     const ref = await addDoc(collection(db, "wardrobeItems"), {
         ...item,
+        isArchived: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     });
@@ -58,6 +59,7 @@ export async function getOutfits(userId: string): Promise<Outfit[]> {
     const q = query(
         collection(db, "outfits"),
         where("userId", "==", userId),
+        where("isArchived", "==", false),
         orderBy("createdAt", "desc")
     );
     const snapshot = await getDocs(q);

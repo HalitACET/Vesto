@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 720" fill="none">
+  <!-- Male Mannequin Silhouette — Vesto Outfit Canvas -->
+  <!-- ViewBox: 400x720 | Fill: Mist #E8E8E8 | Stroke: Stone #737373 1px -->
+
+  <!-- HEAD (Y: 0–90) -->
+  <ellipse cx="200" cy="52" rx="38" ry="44" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- NECK (Y: 90–115) -->
+  <rect x="186" y="94" width="28" height="28" rx="3" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- SHOULDERS + TORSO (Y: 115–330) — broader for male -->
+  <!-- Wide shoulder span -->
+  <path d="M 186 120 Q 130 118 98 130 L 86 148 Q 80 162 82 180 L 92 240 Q 96 260 102 275 L 116 310 Q 126 328 140 336 L 172 344 Q 186 346 200 346 Q 214 346 228 344 L 260 336 Q 274 328 284 310 L 298 275 Q 304 260 308 240 L 318 180 Q 320 162 314 148 L 302 130 Q 270 118 214 120 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- ARMS — Left (Y: 130–420) -->
+  <path d="M 86 148 Q 68 158 60 180 L 50 270 Q 46 295 48 320 L 54 385 Q 56 405 58 418 L 70 420 Q 74 406 74 385 L 70 320 Q 70 295 74 270 L 86 180 L 86 148 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Left hand -->
+  <ellipse cx="64" cy="428" rx="9" ry="13" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- ARMS — Right (Y: 130–420) -->
+  <path d="M 314 148 Q 332 158 340 180 L 350 270 Q 354 295 352 320 L 346 385 Q 344 405 342 418 L 330 420 Q 326 406 326 385 L 330 320 Q 330 295 326 270 L 314 180 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Right hand -->
+  <ellipse cx="336" cy="428" rx="9" ry="13" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- WAIST (Y: 330–400) — less nipped for male -->
+  <path d="M 140 336 Q 120 342 112 356 L 110 380 Q 110 398 118 410 L 130 422 Q 162 432 200 432 Q 238 432 270 422 L 282 410 Q 290 398 290 380 L 288 356 Q 280 342 260 336 L 228 344 Q 214 346 200 346 Q 186 346 172 344 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- HIPS (Y: 400–470) — straighter for male -->
+  <path d="M 118 410 Q 104 420 100 440 L 100 465 Q 102 476 108 484 L 124 492 Q 158 500 200 500 Q 242 500 276 492 L 292 484 Q 298 476 300 465 L 300 440 Q 296 420 282 410 L 270 422 Q 238 432 200 432 Q 162 432 130 422 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- LEFT LEG (Y: 484–680) — straighter legs -->
+  <path d="M 138 492 Q 126 500 120 518 L 114 590 Q 112 620 114 652 L 116 672 Q 118 682 124 686 L 146 686 Q 152 682 153 672 L 154 652 Q 154 620 152 590 L 152 518 Q 152 502 158 492 Q 148 492 138 492 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Left foot -->
+  <ellipse cx="139" cy="692" rx="20" ry="8" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+
+  <!-- RIGHT LEG (Y: 484–680) -->
+  <path d="M 262 492 Q 252 492 242 492 Q 248 502 248 518 L 248 590 Q 246 620 246 652 L 247 672 Q 248 682 254 686 L 276 686 Q 282 682 284 672 L 286 652 Q 288 620 286 590 L 280 518 Q 274 500 262 492 Z"
+    fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+  <!-- Right foot -->
+  <ellipse cx="261" cy="692" rx="20" ry="8" fill="#E8E8E8" stroke="#737373" stroke-width="1"/>
+</svg>
