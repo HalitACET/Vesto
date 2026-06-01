@@ -12,6 +12,9 @@ export interface ForumPost {
     createdAt: Timestamp;
     isModerated: boolean;
     isArchived: boolean;
+    moderationReason?: string | null;
+    moderatedAt?: Timestamp | null;
+    moderatedBy?: string | null;
     // client-side computed
     isLikedByMe?: boolean;
 }
@@ -34,6 +37,8 @@ export interface ForumComment {
     text: string;
     createdAt: Timestamp;
     isArchived: boolean;
+    isModerated?: boolean;
+    moderatedAt?: Timestamp | null;
     likeCount: number; // added
     parentId?: string | null; // added
     replyToDisplayName?: string | null; // added

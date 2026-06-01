@@ -7,6 +7,7 @@ import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase/auth";
+import { subscribeIncomingRecommendations } from "@/lib/firebase/stylistService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Menu, Sun, Moon } from "lucide-react";
+import { Sparkles, Menu, Sun, Moon, Inbox, Bell } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 interface NavbarProps {
@@ -32,11 +33,21 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
     const locale = useLocale() as Locale;
     const { theme, toggleTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
+    const [incomingCount, setIncomingCount] = useState(0);
     const t = useTranslations("sidebar");
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (!vestoUser) return;
+        const unsubscribe = subscribeIncomingRecommendations((recs) => {
+            setIncomingCount(recs.length);
+        });
+        return () => unsubscribe();
+    }, [vestoUser]);
+
     const tAuth = useTranslations("auth");
 
     function switchLocale(newLocale: Locale) {
@@ -69,6 +80,12 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
         if (role === "stylist") {
             base.push({ href: "/dashboard/clients", label: t("clients") });
         }
+
+        if (vestoUser?.isStylistModeActive) {
+            base.push({ href: "/stylists", label: "Stilistler" });
+        }
+
+        base.push({ href: "/recommendations", label: "Öneriler" });
 
         return base;
     })();
@@ -105,13 +122,18 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`text-sm transition-colors ${
+                            className={`relative text-sm transition-colors flex items-center ${
                                 pathname === item.href
                                     ? "text-foreground font-medium"
                                     : "text-muted-foreground hover:text-foreground"
                             }`}
                         >
                             {item.label}
+                            {item.href === "/recommendations" && incomingCount > 0 && (
+                                <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                                    {incomingCount}
+                                </span>
+                            )}
                         </Link>
                     ))}
                 </nav>
@@ -157,8 +179,33 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                                     </Badge>
                                 </Link>
                             )}
+                            {vestoUser && (
+                                <>
+                                    <Link
+                                        href="/notifications"
+                                        className="relative p-1 text-muted-foreground hover:text-foreground transition-colors"
+                                        title="Bildirimler"
+                                    >
+                                        <Bell className="w-5 h-5" />
+                                    </Link>
+                                    <Link
+                                        href="/recommendations"
+                                        className="relative p-1 text-muted-foreground hover:text-foreground transition-colors"
+                                        title="Kombin Önerileri"
+                                    >
+                                    <Inbox className="w-5 h-5" />
+                                    {incomingCount > 0 && (
+                                        <span
+                                            className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-accent text-accent-foreground text-[10px] font-bold rounded-full flex items-center justify-center px-1"
+                                        >
+                                            {incomingCount}
+                                        </span>
+                                    )}
+                                    </Link>
+                                </>
+                            )}
                             <DropdownMenu>
-                                <DropdownMenuTrigger className="rounded-full ring-2 ring-border hover:ring-accent transition-all outline-none">
+                                <DropdownMenuTrigger data-testid="user-menu" className="rounded-full ring-2 ring-border hover:ring-accent transition-all outline-none">
                                     <Avatar className="h-8 w-8">
                                         <AvatarImage src={firebaseUser.photoURL ?? vestoUser?.photoUrl ?? undefined} />
                                         <AvatarFallback className="bg-primary text-primary-foreground text-xs">

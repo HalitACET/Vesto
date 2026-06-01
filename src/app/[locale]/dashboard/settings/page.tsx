@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { updateProfile, setWardrobePublic } from "@/lib/firebase/profileService";
-import { Globe, Palette, User, Bell, Sun, Moon, Loader2, Camera, ShieldAlert, Check } from "lucide-react";
+import { setStylistMode } from "@/lib/firebase/stylistService";
+import { Globe, Palette, User, Bell, Sun, Moon, Loader2, Camera, ShieldAlert, Check, Sparkles } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
+import Image from "next/image";
 
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => {
     return (
@@ -51,6 +53,7 @@ export default function SettingsPage() {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
     const [wardrobePublic, setWardrobePublicState] = useState(false);
+    const [isStylistModeActive, setIsStylistModeActiveState] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,6 +64,7 @@ export default function SettingsPage() {
             setBio(vestoUser.bio || "");
             setPhotoPreview(vestoUser.photoURL || vestoUser.photoUrl || null);
             setWardrobePublicState(vestoUser.wardrobePublic || false);
+            setIsStylistModeActiveState(vestoUser.isStylistModeActive || false);
         }
     }, [vestoUser]);
 
@@ -117,6 +121,21 @@ export default function SettingsPage() {
             console.error("Error setting wardrobe public:", error);
             setErrorMsg(locale === "tr" ? "Güncellenirken bir hata oluştu" : "An error occurred during update");
             setTimeout(() => setErrorMsg(null), 3000);
+        }
+    }
+
+    async function handleToggleStylistMode(val: boolean) {
+        if (!vestoUser) return;
+        setIsStylistModeActiveState(val);
+        try {
+            await setStylistMode(val);
+            setSuccessMsg(locale === "tr" ? (val ? "Stilist modu açıldı!" : "Stilist modu kapatıldı.") : (val ? "Stylist mode enabled!" : "Stylist mode disabled."));
+            setTimeout(() => setSuccessMsg(null), 3000);
+        } catch (error) {
+            console.error("Error setting stylist mode:", error);
+            setErrorMsg(locale === "tr" ? "Güncellenirken bir hata oluştu" : "An error occurred during update");
+            setTimeout(() => setErrorMsg(null), 3000);
+            setIsStylistModeActiveState(!val); // Revert on error
         }
     }
 
@@ -239,7 +258,7 @@ export default function SettingsPage() {
                                     />
                                     {photoPreview ? (
                                         // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={photoPreview} alt="" className="h-full w-full object-cover group-hover:opacity-40 transition-opacity" />
+                                        <Image width={800} height={800} src={photoPreview} alt="" className="h-full w-full object-cover group-hover:opacity-40 transition-opacity" />
                                     ) : (
                                         <span className="text-xl font-bold uppercase text-muted-foreground">
                                             {displayName ? displayName[0] : "?"}
@@ -325,6 +344,26 @@ export default function SettingsPage() {
                             <Link href="/dashboard/wardrobe" className="text-xs text-accent hover:underline inline-flex items-center font-medium">
                                 {t("profile.perItemLink")} →
                             </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Stylist Mode settings */}
+                <Card className="border-border bg-card">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                            <Sparkles size={15} className="text-accent" />
+                            Stilist Modu
+                        </CardTitle>
+                        <p className="text-xs text-muted-foreground">Başkalarının gardırobundan kombin oluşturabilirsin</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+                            <div className="mr-4">
+                                <p className="text-sm font-medium">Stilist Modunu Aç</p>
+                                <p className="text-xs text-muted-foreground">Profilinde stilist rozeti görünür ve diğer kullanıcılara kombin önerebilirsin.</p>
+                            </div>
+                            <Toggle checked={isStylistModeActive} onChange={handleToggleStylistMode} />
                         </div>
                     </CardContent>
                 </Card>

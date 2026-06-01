@@ -338,12 +338,13 @@ function CommentItem({
                 {/* Actions Row */}
                 <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-1.5">
                     <button 
+                        data-testid="like-button"
                         type="button"
                         onClick={onLike}
                         className={`flex items-center gap-1 transition-all active:scale-90 ${comment.isLikedByMe ? 'text-red-500 font-medium' : 'hover:text-foreground'}`}
                     >
                         <Heart size={12} className={comment.isLikedByMe ? "fill-current" : ""} />
-                        <span>{comment.likeCount || 0}</span>
+                        <span data-testid="like-count">{comment.likeCount || 0}</span>
                     </button>
                     <button 
                         type="button"

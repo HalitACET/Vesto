@@ -35,6 +35,7 @@ import type {
 } from "@/types";
 import type { SlotType }                     from "@/components/canvas/SlotRegion";
 import type { MannequinType, SlotState }     from "@/components/canvas/MannequinCanvas";
+import Image from "next/image";
 
 // ── Slot pozisyon → canvas koordinat çevirisi ─────────────────────────────────
 // Firestore'a yazılan canvasLayout, slot ordinal olarak saklanır
@@ -391,7 +392,7 @@ export default function CanvasPage() {
                     {activeItem && (
                         <div className="w-20 rounded-xl overflow-hidden shadow-2xl opacity-90 rotate-3 border border-border">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                            <Image width={800} height={800}
                                 src={activeItem.bgRemovedUrl ?? activeItem.imageUrl ?? ""}
                                 alt={activeItem.name ?? ""}
                                 className={`w-full aspect-square ${activeItem.bgRemovedUrl ? "object-contain" : "object-cover"}`}

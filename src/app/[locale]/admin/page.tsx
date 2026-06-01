@@ -30,6 +30,8 @@ import {
     fetchAIQueue,
 } from "@/app/actions/adminActions";
 import type { WardrobeItem, AdminReviewStatus, ClothingCategory } from "@/types";
+import { getPlatformStats } from '@/lib/firebase/analyticsService';
+import Image from "next/image";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -228,7 +230,7 @@ function AITagValidationTab() {
                                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                                         {item.imageUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                                            <Image width={800} height={800} src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center">
                                                 <Shirt size={20} className="text-muted-foreground/40" />
@@ -384,6 +386,11 @@ const MOCK_FLAGGED_POSTS = [
 
 export default function AdminPage() {
     const t = useTranslations("admin");
+    const [stats, setStats] = useState<any>(null);
+
+    useEffect(() => {
+        getPlatformStats().then(setStats);
+    }, []);
 
     return (
         <DashboardLayout>
@@ -396,6 +403,22 @@ export default function AdminPage() {
                         <p className="text-sm text-muted-foreground mt-0.5">{t("subtitle")}</p>
                     </div>
                 </div>
+
+                {/* Platform Özeti */}
+                {stats && (
+                    <div className="mb-6">
+                        <div className="grid grid-cols-3 gap-4 mb-3">
+                            <MiniStatCard label="Toplam Kullanıcı" value={stats.totalUsers} />
+                            <MiniStatCard label="Bu Hafta Kayıt" value={stats.newUsersThisWeek} />
+                            <MiniStatCard label="Aktif Stilist" value={stats.activeStylists} />
+                        </div>
+                        <Link href="/admin/analytics" className="inline-block">
+                            <button className="flex items-center gap-2 font-inter text-sm text-muted-foreground hover:text-foreground transition">
+                                Detaylı İstatistikler <ArrowRight size={14} />
+                            </button>
+                        </Link>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <Tabs defaultValue="ai-tags">
@@ -463,5 +486,18 @@ export default function AdminPage() {
                 </Tabs>
             </div>
         </DashboardLayout>
+    );
+}
+
+function MiniStatCard({ label, value }: { label: string; value: number }) {
+    return (
+        <div className="bg-card border border-border rounded-lg p-4">
+            <div className="font-playfair text-2xl font-semibold text-foreground">
+                {value}
+            </div>
+            <div className="font-inter text-xs text-muted-foreground mt-1">
+                {label}
+            </div>
+        </div>
     );
 }

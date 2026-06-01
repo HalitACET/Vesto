@@ -14,6 +14,7 @@ import {
     Users,
     ShieldCheck,
     User,
+    BarChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,6 +61,8 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
         { href: "/dashboard/canvas", label: t("canvas"), icon: Palette },
         { href: "/dashboard/outfits", label: t("outfits"), icon: Heart },
         { href: "/dashboard/community", label: t("community"), icon: MessageSquareWarning },
+        { href: "/recommendations", label: "Öneriler", icon: Sparkles },
+        { href: "/dashboard/my-report", label: "Stil Raporun", icon: BarChart },
         { href: "/dashboard/profile", label: t("profile"), icon: User },
         { href: "/dashboard/settings", label: t("settings"), icon: Settings },
     ];
@@ -71,6 +74,9 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
     const ADMIN_NAV = [
         { href: "/admin", label: t("admin"), icon: ShieldCheck },
         { href: "/admin/users", label: t("adminUsers"), icon: Users },
+        { href: "/admin/ai-monitor", label: "AI Monitör", icon: Sparkles },
+        { href: "/admin/moderation", label: "Moderasyon", icon: ShieldCheck },
+        { href: "/admin/analytics", label: "İstatistikler", icon: BarChart },
     ];
 
     const extraNav = isAdmin ? ADMIN_NAV : isStylist ? STYLIST_NAV : [];

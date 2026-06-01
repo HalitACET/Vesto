@@ -215,12 +215,19 @@ export default function AdminUsersPage() {
                                             {timeAgo(user.lastActive)}
                                         </td>
                                         <td className="px-5 py-3 text-right">
-                                            <Link href={`/admin/users/${user.uid}`}>
-                                                <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                                                    {t("table.detail")}
-                                                    <ChevronRight size={13} />
-                                                </Button>
-                                            </Link>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Link href={`/admin/users/${user.uid}/report`}>
+                                                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                                                        Rapor
+                                                    </Button>
+                                                </Link>
+                                                <Link href={`/admin/users/${user.uid}`}>
+                                                    <Button variant="ghost" size="sm" className="gap-1 text-xs h-8">
+                                                        {t("table.detail")}
+                                                        <ChevronRight size={13} />
+                                                    </Button>
+                                                </Link>
+                                            </div>
                                         </td>
                                     </motion.tr>
                                 ))}

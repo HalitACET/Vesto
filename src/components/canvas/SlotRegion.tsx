@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { X, Plus } from "lucide-react";
 import type { WardrobeItem, ClothingCategory } from "@/types";
+import Image from "next/image";
 
 // ── Slot Tipleri ──────────────────────────────────────────────────────────────
 
@@ -86,8 +87,7 @@ export function SlotRegion({ slotType, item, onClear }: SlotRegionProps) {
                 // Dolu slot — kıyafet görseli
                 <div className="relative w-full h-full group">
                     {imgSrc ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
+                        <Image width={800} height={800}
                             src={imgSrc}
                             alt={item.name ?? slotType}
                             className={`

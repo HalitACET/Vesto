@@ -14,6 +14,9 @@ import { tr, enUS } from "date-fns/locale";
 import { PostDeleteButton } from "./PostDeleteButton";
 import { SuggestOutfitSheet } from "./SuggestOutfitSheet";
 import { Link } from "@/i18n/navigation";
+import { FlagIcon } from "lucide-react";
+import { reportContent } from "@/lib/firebase/moderationService";
+import { toast } from "sonner";
 
 interface Props {
     post: ForumPost;
@@ -148,6 +151,7 @@ export function ForumPostCard({ post, onDelete, clickable = true }: Props) {
                 <div className="flex items-center gap-4 mt-6 pt-4 border-t border-border flex-wrap">
                     {/* Like */}
                     <button
+                        data-testid="like-button"
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -162,7 +166,7 @@ export function ForumPostCard({ post, onDelete, clickable = true }: Props) {
                                 liked ? "fill-destructive text-destructive scale-110" : ""
                             }`}
                         />
-                        <span>{t("likeCount", { count: likeCount })}</span>
+                        <span data-testid="like-count">{t("likeCount", { count: likeCount })}</span>
                     </button>
 
                     {/* Comment count */}
@@ -179,12 +183,16 @@ export function ForumPostCard({ post, onDelete, clickable = true }: Props) {
                                 e.preventDefault();
                                 setSuggestOpen(true);
                             }}
-                            className="ml-auto flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80 active:scale-95 transition-all duration-200 bg-accent/10 hover:bg-accent/20 rounded-full px-3 py-1.5"
+                            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80 active:scale-95 transition-all duration-200 bg-accent/10 hover:bg-accent/20 rounded-full px-3 py-1.5"
                         >
                             <Shirt size={13} />
                             Kombin Öner
                         </button>
                     )}
+                    
+                    <div className="ml-auto flex items-center">
+                        <ReportButton targetType="post" targetId={post.id} />
+                    </div>
                 </div>
             </article>
 
@@ -196,6 +204,115 @@ export function ForumPostCard({ post, onDelete, clickable = true }: Props) {
                 open={suggestOpen}
                 onOpenChange={setSuggestOpen}
             />
+        </>
+    );
+}
+
+function ReportButton({
+    targetType, targetId
+}: {
+    targetType: 'post' | 'comment';
+    targetId: string;
+}) {
+    const [open, setOpen] = useState(false);
+    const [reason, setReason] = useState('');
+    const [description, setDescription] = useState('');
+    const [sending, setSending] = useState(false);
+
+    const handleReport = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!reason) return;
+        setSending(true);
+        try {
+            await reportContent(targetType, targetId, reason, description);
+            toast.success('Şikayetin iletildi. İnceleyeceğiz.');
+            setOpen(false);
+        } catch {
+            toast.error('Şikayet gönderilemedi');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setOpen(true);
+                }}
+                className="text-stone hover:text-onyx transition p-2 rounded-full hover:bg-mist/50"
+                title="Şikayet Et"
+            >
+                <FlagIcon size={16} className="text-muted-foreground hover:text-red-500 transition-colors" />
+            </button>
+
+            {open && (
+                <div 
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+                    className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+                >
+                    <div className="bg-background rounded-lg p-6 max-w-sm w-full border border-border shadow-lg">
+                        <h3 className="font-playfair text-lg text-foreground mb-4">
+                            İçeriği Şikayet Et
+                        </h3>
+
+                        <div className="space-y-2 mb-4">
+                            {[
+                                { key: 'spam', label: 'Spam' },
+                                { key: 'inappropriate', label: 'Uygunsuz içerik' },
+                                { key: 'harassment', label: 'Taciz / Zorbalık' },
+                                { key: 'other', label: 'Diğer' },
+                            ].map(r => (
+                                <label key={r.key} className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="reason"
+                                        value={r.key}
+                                        checked={reason === r.key}
+                                        onChange={() => setReason(r.key)}
+                                        className="accent-primary"
+                                    />
+                                    <span className="font-inter text-sm text-foreground">
+                                        {r.label}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+
+                        <textarea
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                            placeholder="Açıklama (opsiyonel)"
+                            maxLength={280}
+                            rows={2}
+                            className="w-full border border-input rounded p-2 font-inter text-sm mb-4 resize-none outline-none bg-background text-foreground"
+                        />
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setOpen(false);
+                                }}
+                                className="flex-1 py-2 text-muted-foreground font-inter text-sm hover:text-foreground transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleReport}
+                                disabled={!reason || sending}
+                                className="flex-1 py-2 bg-primary text-primary-foreground rounded font-inter text-sm font-semibold disabled:opacity-50 transition-opacity"
+                            >
+                                {sending ? 'Gönderiliyor...' : 'Şikayet Et'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

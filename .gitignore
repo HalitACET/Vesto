@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Firebase service account
 *adminsdk*.json
+e2e/.auth/
+playwright-report/
+test-results/

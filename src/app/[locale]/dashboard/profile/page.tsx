@@ -17,6 +17,7 @@ import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { User, Link as LinkIcon, Settings, LogOut, Shirt, Palette, MessageSquare, Users } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
+import Image from "next/image";
 
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => {
     return (
@@ -108,7 +109,7 @@ export default function ProfilePage() {
 
     return (
         <DashboardLayout>
-            <div className="mx-auto max-w-2xl px-4 py-8">
+            <div data-testid="profile-screen" className="mx-auto max-w-2xl px-4 py-8">
                 {/* Profile Card */}
                 <motion.div
                     initial={{ opacity: 0, y: 15 }}
@@ -133,8 +134,8 @@ export default function ProfilePage() {
                             <div className="relative group">
                                 <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center">
                                     {vestoUser.photoURL || vestoUser.photoUrl ? (
-                                        <img
-                                            src={vestoUser.photoURL || vestoUser.photoUrl}
+                                        <Image width={800} height={800}
+                                            src={vestoUser.photoURL || vestoUser.photoUrl || ''}
                                             alt={vestoUser.displayName}
                                             className="h-full w-full object-cover"
                                         />

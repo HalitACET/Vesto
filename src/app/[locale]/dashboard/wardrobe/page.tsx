@@ -24,6 +24,7 @@ import { doc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db, auth } from "@/lib/firebase/config";
 import type { ClothingCategory, WardrobeItem } from "@/types";
 import { toggleItemPublic } from "@/lib/firebase/profileService";
+import Image from "next/image";
 
 const SUBCATEGORIES: Record<string, string[]> = {
     tops: ["tshirt", "shirt", "sweater", "hoodie", "blouse", "tanktop"],
@@ -194,7 +195,7 @@ export default function WardrobePage() {
                                     {previewFile ? (
                                         <div className="relative group/preview">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
+                                            <Image width={800} height={800}
                                                 src={previewFile}
                                                 alt="Preview"
                                                 className="h-40 w-40 rounded-lg object-cover"
@@ -341,6 +342,7 @@ export default function WardrobePage() {
                                 <TabsTrigger
                                     key={value}
                                     value={value}
+                                    data-testid="category-filter"
                                     className="rounded-full border border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary text-xs"
                                 >
                                     {t(`categories.${value}` as Parameters<typeof t>[0])}
@@ -376,12 +378,13 @@ export default function WardrobePage() {
                                 transition={{ delay: i * 0.04 }}
                             >
                                 <Card 
+                                    data-testid="wardrobe-item-card"
                                     onClick={() => setSelectedItem(item)}
                                     className="group overflow-hidden border-border hover:border-accent/30 transition-all cursor-pointer"
                                 >
                                     <div className="relative aspect-[3/4] overflow-hidden bg-muted">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
+                                        <Image width={800} height={800}
                                             src={item.imageUrl}
                                             alt={item.name}
                                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -454,7 +457,7 @@ export default function WardrobePage() {
                             <div className="space-y-4 pt-2">
                                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted border border-border">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
+                                    <Image width={800} height={800}
                                         src={selectedItem.imageUrl}
                                         alt={selectedItem.name}
                                         className="h-full w-full object-cover"

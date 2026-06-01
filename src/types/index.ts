@@ -185,9 +185,28 @@ export interface VestoUser {
     outfitCount?: number;
     followerCount?: number;   // YENİ — Hafta 11b
     followingCount?: number;
+    suggestionsSent: number;
+    suggestionsAccepted: number;
+    averageRating: number;
+    ratingCount: number;
     assignedStylistId?: string;
     lastActive?: string;
+    strikes?: number;
+    isSuspended?: boolean;
     createdAt: string;
+}
+
+import { Timestamp } from 'firebase/firestore';
+
+export interface AppNotification {
+    id: string;
+    userId: string;
+    type: 'recommendation' | 'accepted' | 'rejected' | 'follow';
+    title: string;
+    body: string;
+    relatedId?: string | null;
+    isRead: boolean;
+    createdAt: Timestamp;
 }
 
 export interface WeatherData {
@@ -231,3 +250,20 @@ export interface StyleRecommendation {
     createdAt: string;
     isAccepted?: boolean;
 }
+
+export * from "./stylist";
+
+export interface Report {
+    id: string;
+    reporterId: string;
+    reporterDisplayName: string;
+    targetType: 'post' | 'comment';
+    targetId: string;
+    reason: 'spam' | 'inappropriate' | 'harassment' | 'other';
+    description?: string;
+    status: 'pending' | 'resolved' | 'dismissed';
+    createdAt: Timestamp;
+    resolvedAt: Timestamp | null;
+    resolvedBy: string | null;
+}
+

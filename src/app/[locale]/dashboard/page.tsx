@@ -14,6 +14,7 @@ import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Plus, Shirt, Palette, CloudSun, ArrowRight, Sparkles } from "lucide-react";
 import type { VestoUser } from "@/types";
+import Image from "next/image";
 
 // ── Components ───────────────────────────────────────────────────────────────
 
@@ -62,8 +63,12 @@ function WardrobeSummary({ userId }: { userId: string }) {
             <CardContent>
                 <div className="flex gap-2 overflow-hidden">
                     {items.slice(0, 5).map((item) => (
-                        <div key={item.id} className="h-16 w-12 rounded-md overflow-hidden border border-border">
-                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                        <div key={item.id} className="h-16 w-12 rounded-md overflow-hidden border border-border flex items-center justify-center bg-muted">
+                            {item.imageUrl ? (
+                                <Image width={800} height={800} src={item.imageUrl} alt={item.name || "Kıyafet"} className="h-full w-full object-cover" />
+                            ) : (
+                                <span className="text-[10px] text-muted-foreground text-center">Resim<br/>Yok</span>
+                            )}
                         </div>
                     ))}
                     {items.length > 5 && (
@@ -127,7 +132,11 @@ function RecentOutfits({ userId }: { userId: string }) {
                         {outfits.slice(0, 3).map((outfit) => (
                             <div key={outfit.id} className="h-16 w-16 rounded-md overflow-hidden border border-border bg-muted grid grid-cols-2">
                                 {outfit.itemSnapshots?.slice(0, 4).map((snap) => (
-                                    <img key={snap.id} src={snap.imageUrl} alt="" className="h-full w-full object-cover" />
+                                    snap.imageUrl ? (
+                                        <Image width={800} height={800} key={snap.id} src={snap.imageUrl} alt="Kombin parçası" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <div key={snap.id} className="h-full w-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground">Yok</div>
+                                    )
                                 ))}
                             </div>
                         ))}

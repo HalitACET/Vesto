@@ -2,6 +2,7 @@
 
 import type { WardrobeItem } from "@/types";
 import { SlotRegion, type SlotType } from "./SlotRegion";
+import Image from "next/image";
 
 // ── Mannequin Tipi ────────────────────────────────────────────────────────────
 
@@ -46,6 +47,7 @@ interface MannequinCanvasProps {
 export function MannequinCanvas({ slots, mannequinType, onClear }: MannequinCanvasProps) {
     return (
         <div
+            data-testid="mannequin-canvas"
             className="relative mx-auto flex-shrink-0 rounded-2xl overflow-hidden"
             style={{ width: CANVAS_W, height: CANVAS_H }}
         >
@@ -54,7 +56,7 @@ export function MannequinCanvas({ slots, mannequinType, onClear }: MannequinCanv
 
             {/* Layer 2: Mannequin SVG */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image width={800} height={800}
                 src={`/mannequin/${mannequinType}.svg`}
                 alt={`${mannequinType} mannequin`}
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"

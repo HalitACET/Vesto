@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 // ── Kategori → slot eşleşmesi ─────────────────────────────────────────────────
 
@@ -49,8 +50,7 @@ function DraggableItem({ item }: { item: WardrobeItem }) {
             `}
         >
             {imgSrc ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
+                <Image width={800} height={800}
                     src={imgSrc}
                     alt={item.name ?? "Kıyafet"}
                     className={`h-full w-full ${item.bgRemovedUrl ? "object-contain p-1" : "object-cover"}`}
