@@ -382,13 +382,16 @@ export default function WardrobePage() {
                                     onClick={() => setSelectedItem(item)}
                                     className="group overflow-hidden border-border hover:border-accent/30 transition-all cursor-pointer"
                                 >
-                                    <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <Image width={800} height={800}
-                                            src={item.imageUrl}
-                                            alt={item.name}
-                                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
+                                    <div className="relative aspect-[3/4] overflow-hidden bg-muted flex items-center justify-center">
+                                        {item.imageUrl ? (
+                                            <Image width={800} height={800}
+                                                src={item.imageUrl}
+                                                alt={item.name || "Kıyafet"}
+                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground text-center">Görsel Yok</span>
+                                        )}
                                         <button 
                                             onClick={async (e) => {
                                                 e.stopPropagation();
@@ -457,11 +460,17 @@ export default function WardrobePage() {
                             <div className="space-y-4 pt-2">
                                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted border border-border">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <Image width={800} height={800}
-                                        src={selectedItem.imageUrl}
-                                        alt={selectedItem.name}
-                                        className="h-full w-full object-cover"
-                                    />
+                                    {selectedItem.imageUrl ? (
+                                        <Image width={800} height={800}
+                                            src={selectedItem.imageUrl}
+                                            alt={selectedItem.name || "Kıyafet Detayı"}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+                                            Görsel Yok
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>

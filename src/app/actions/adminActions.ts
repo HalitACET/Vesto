@@ -142,9 +142,210 @@ export async function fetchAIQueue(
                       return i.adminReview?.status === statusFilter;
                   });
 
-        return { ok: true, items: filtered };
+        // Convert class instances (like Timestamps) to plain objects so Next.js can serialize them
+        const plainObjects = JSON.parse(JSON.stringify(filtered));
+        return { ok: true, items: plainObjects };
     } catch (err) {
         console.error("[fetchAIQueue]", err);
         return { ok: false, error: "Firestore okuma hatası." };
     }
 }
+// ── Moderation ─────────────────────────────────────────────────────────────────
+
+export async function approveReportAndPenalize(reportId: string): Promise<ActionResult> {
+    const auth = await requireAdmin();
+    if (isActionResult(auth)) return auth;
+
+    try {
+        const reportRef = adminDb.collection('reports').doc(reportId);
+        const reportDoc = await reportRef.get();
+        if (!reportDoc.exists) return { ok: false, error: 'Rapor bulunamadı.' };
+
+        const report = reportDoc.data()!;
+        const { targetType, targetId, reason } = report;
+        let authorId: string | undefined;
+
+        if (targetType === 'post') {
+            const postRef = adminDb.collection('forumPosts').doc(targetId);
+            const postDoc = await postRef.get();
+            if (postDoc.exists) {
+                authorId = postDoc.data()!.authorId;
+                await postRef.update({
+                    isArchived: true,
+                    isModerated: true,
+                    moderationReason: reason || 'Kural ihlali',
+                    moderatedAt: new Date().toISOString(),
+                    moderatedBy: auth.uid,
+                });
+            }
+        } else if (targetType === 'comment') {
+            const commentRef = adminDb.collection('forumComments').doc(targetId);
+            const commentDoc = await commentRef.get();
+            if (commentDoc.exists) {
+                authorId = commentDoc.data()!.authorId;
+                await commentRef.update({
+                    isArchived: true,
+                    isModerated: true,
+                    moderatedAt: new Date().toISOString(),
+                });
+            }
+        }
+
+        if (authorId) {
+            const userRef = adminDb.collection('users').doc(authorId);
+            const userDoc = await userRef.get();
+            if (userDoc.exists) {
+                const strikes = (userDoc.data()?.strikes || 0) + 1;
+                await userRef.update({
+                    strikes,
+                    isSuspended: strikes >= 3,
+                    lastStrikeReason: reason || 'Kural ihlali',
+                    lastStrikeAt: new Date().toISOString(),
+                    lastStrikeBy: auth.uid,
+                });
+            }
+        }
+
+        await reportRef.update({
+            status: 'resolved',
+            resolvedAt: new Date().toISOString(),
+            resolvedBy: auth.uid,
+        });
+
+        return { ok: true, data: { strikes: authorId ? ((await adminDb.collection('users').doc(authorId).get()).data()?.strikes || 0) : 0 } };
+    } catch (err) {
+        console.error('[approveReportAndPenalize]', err);
+        return { ok: false, error: 'Veritabanı hatası.' };
+    }
+}
+
+export async function approveReportAdmin(reportId: string): Promise<ActionResult> {
+    const auth = await requireAdmin();
+    if (isActionResult(auth)) return auth;
+
+    try {
+        const reportRef = adminDb.collection('reports').doc(reportId);
+        const reportDoc = await reportRef.get();
+        if (!reportDoc.exists) return { ok: false, error: 'Rapor bulunamadı.' };
+
+        const report = reportDoc.data()!;
+        const { targetType, targetId, reason } = report;
+
+        if (targetType === 'post') {
+            await adminDb.collection('forumPosts').doc(targetId).update({
+                isArchived: true,
+                isModerated: true,
+                moderationReason: reason || 'Şikayet üzerine kaldırıldı',
+                moderatedAt: new Date().toISOString(),
+                moderatedBy: auth.uid,
+            });
+        } else if (targetType === 'comment') {
+            await adminDb.collection('forumComments').doc(targetId).update({
+                isArchived: true,
+                isModerated: true,
+                moderatedAt: new Date().toISOString(),
+            });
+        }
+
+        await reportRef.update({
+            status: 'resolved',
+            resolvedAt: new Date().toISOString(),
+            resolvedBy: auth.uid,
+        });
+
+        return { ok: true };
+    } catch (err) {
+        console.error('[approveReportAdmin]', err);
+        return { ok: false, error: 'Veritabanı hatası.' };
+    }
+}
+
+export async function dismissReportAdmin(reportId: string): Promise<ActionResult> {
+    const auth = await requireAdmin();
+    if (isActionResult(auth)) return auth;
+
+    try {
+        await adminDb.collection('reports').doc(reportId).update({
+            status: 'dismissed',
+            resolvedAt: new Date().toISOString(),
+            resolvedBy: auth.uid,
+        });
+
+        return { ok: true };
+    } catch (err) {
+        console.error('[dismissReportAdmin]', err);
+        return { ok: false, error: 'Veritabanı hatası.' };
+    }
+}
+
+export async function removeCommentAdmin(commentId: string): Promise<ActionResult> {
+    const auth = await requireAdmin();
+    if (isActionResult(auth)) return auth;
+
+    try {
+        const commentRef = adminDb.collection('forumComments').doc(commentId);
+        const commentDoc = await commentRef.get();
+        if (!commentDoc.exists) return { ok: false, error: 'Yorum bulunamadı.' };
+
+        await commentRef.update({
+            isArchived: true,
+            isModerated: true,
+            moderatedAt: new Date().toISOString(),
+            moderatedBy: auth.uid,
+        });
+
+        return { ok: true };
+    } catch (err) {
+        console.error('[removeCommentAdmin]', err);
+        return { ok: false, error: 'Veritabanı hatası.' };
+    }
+}
+
+export async function removePostAdmin(postId: string, reason: string): Promise<ActionResult> {
+    const auth = await requireAdmin();
+    if (isActionResult(auth)) return auth;
+
+    try {
+        const postRef = adminDb.collection('forumPosts').doc(postId);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) return { ok: false, error: 'Post bulunamadı.' };
+
+        await postRef.update({
+            isArchived: true,
+            isModerated: true,
+            moderationReason: reason,
+            moderatedAt: new Date().toISOString(),
+            moderatedBy: auth.uid,
+        });
+
+        return { ok: true };
+    } catch (err) {
+        console.error('[removePostAdmin]', err);
+        return { ok: false, error: 'Veritabanı hatası.' };
+    }
+}
+
+export async function restorePostAdmin(postId: string): Promise<ActionResult> {
+    const auth = await requireAdmin();
+    if (isActionResult(auth)) return auth;
+
+    try {
+        const postRef = adminDb.collection('forumPosts').doc(postId);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) return { ok: false, error: 'Post bulunamadı.' };
+
+        await postRef.update({
+            isArchived: false,
+            isModerated: false,
+            moderationReason: null,
+            moderatedAt: null,
+            moderatedBy: null,
+        });
+
+        return { ok: true };
+    } catch (err) {
+        console.error('[restorePostAdmin]', err);
+        return { ok: false, error: 'Veritabanı hatası.' };
+    }
+}
+

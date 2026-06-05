@@ -129,17 +129,31 @@ function RecentOutfits({ userId }: { userId: string }) {
                     <p className="text-xs text-muted-foreground italic">Henüz bir outfit oluşturmadın.</p>
                 ) : (
                     <div className="flex gap-2 overflow-hidden">
-                        {outfits.slice(0, 3).map((outfit) => (
-                            <div key={outfit.id} className="h-16 w-16 rounded-md overflow-hidden border border-border bg-muted grid grid-cols-2">
-                                {outfit.itemSnapshots?.slice(0, 4).map((snap) => (
-                                    snap.imageUrl ? (
-                                        <Image width={800} height={800} key={snap.id} src={snap.imageUrl} alt="Kombin parçası" className="h-full w-full object-cover" />
+                        {outfits.slice(0, 3).map((outfit) => {
+                            const hasThumbnail = !!outfit.thumbnailUrl;
+                            const hasSnapshots = outfit.itemSnapshots && outfit.itemSnapshots.length > 0;
+                            return (
+                                <div key={outfit.id} className="h-16 w-16 rounded-md overflow-hidden border border-border bg-muted relative shrink-0">
+                                    {hasThumbnail ? (
+                                        <Image width={800} height={800} src={outfit.thumbnailUrl!} alt={outfit.name || "Kombin"} className="h-full w-full object-cover" />
+                                    ) : hasSnapshots ? (
+                                        <div className="h-full w-full grid grid-cols-2">
+                                            {outfit.itemSnapshots!.slice(0, 4).map((snap) => (
+                                                snap.imageUrl ? (
+                                                    <Image width={800} height={800} key={snap.id} src={snap.imageUrl} alt="Kombin parçası" className="h-full w-full object-cover" />
+                                                ) : (
+                                                    <div key={snap.id} className="h-full w-full bg-muted flex items-center justify-center text-[8px] text-muted-foreground">Yok</div>
+                                                )
+                                            ))}
+                                        </div>
                                     ) : (
-                                        <div key={snap.id} className="h-full w-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground">Yok</div>
-                                    )
-                                ))}
-                            </div>
-                        ))}
+                                        <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                                            <Palette size={20} className="opacity-50" />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </CardContent>

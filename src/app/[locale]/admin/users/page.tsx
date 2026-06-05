@@ -198,12 +198,17 @@ export default function AdminUsersPage() {
                                             </Badge>
                                         </td>
                                         <td className="px-5 py-3">
-                                            <Badge
-                                                variant={STATUS_VARIANTS[user.status]}
-                                                className={`text-xs ${user.status === "suspended" ? "border-destructive/50 text-destructive" : "bg-green-500/15 text-green-600 border-0"}`}
-                                            >
-                                                {t(`statusLabels.${user.status}` as Parameters<typeof t>[0])}
-                                            </Badge>
+                                            {(() => {
+                                                const sKey = (!user.status || user.status === "undefined") ? "active" : user.status;
+                                                return (
+                                                    <Badge
+                                                        variant={STATUS_VARIANTS[sKey as keyof typeof STATUS_VARIANTS] || "default"}
+                                                        className={`text-xs ${sKey === "suspended" ? "border-destructive/50 text-destructive" : "bg-green-500/15 text-green-600 border-0"}`}
+                                                    >
+                                                        {t(`statusLabels.${sKey}` as Parameters<typeof t>[0])}
+                                                    </Badge>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-5 py-3 text-right text-muted-foreground">
                                             {user.wardrobeCount ?? 0}

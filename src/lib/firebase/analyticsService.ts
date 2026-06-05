@@ -1,16 +1,23 @@
-import {
-  collection, query, where, getDocs,
-  orderBy, limit, Timestamp
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+"use server";
+
+import { adminDb } from '@/lib/firebase/admin';
+import { getServerSession } from '@/lib/firebase/serverAuth';
 import {
   PlatformStats, CategoryStat,
   ColorStat, DailyStat, StylistStat
 } from '@/types/analytics';
 
-// ─── PLATFORM ÖZET ──────────────────────────────
+async function requireAdmin() {
+  const session = await getServerSession();
+  if (!session || session.role !== 'admin') {
+    throw new Error('Yetkisiz islem');
+  }
+}
+
+// ─── PLATFORM OZET ──────────────────────────────
 
 export async function getPlatformStats(): Promise<PlatformStats> {
+  await requireAdmin();
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart);
@@ -26,47 +33,33 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     newToday,
     newThisWeek,
   ] = await Promise.all([
-    getDocs(collection(db, 'users')),
-    getDocs(collection(db, 'wardrobeItems')),
-    getDocs(query(
-      collection(db, 'outfits'),
-      where('isArchived', '==', false),
-    )),
-    getDocs(query(
-      collection(db, 'forumPosts'),
-      where('isArchived', '==', false),
-    )),
-    getDocs(collection(db, 'outfitRecommendations')),
-    getDocs(query(
-      collection(db, 'users'),
-      where('isStylistModeActive', '==', true),
-    )),
-    getDocs(query(
-      collection(db, 'users'),
-      where('createdAt', '>=', Timestamp.fromDate(todayStart)),
-    )),
-    getDocs(query(
-      collection(db, 'users'),
-      where('createdAt', '>=', Timestamp.fromDate(weekStart)),
-    )),
+    adminDb.collection('users').count().get(),
+    adminDb.collection('wardrobeItems').count().get(),
+    adminDb.collection('outfits').where('isArchived', '==', false).count().get(),
+    adminDb.collection('forumPosts').where('isArchived', '==', false).count().get(),
+    adminDb.collection('outfitRecommendations').count().get(),
+    adminDb.collection('users').where('isStylistModeActive', '==', true).count().get(),
+    adminDb.collection('users').where('createdAt', '>=', todayStart).count().get(),
+    adminDb.collection('users').where('createdAt', '>=', weekStart).count().get(),
   ]);
 
   return {
-    totalUsers: users.size,
-    totalWardrobeItems: wardrobeItems.size,
-    totalOutfits: outfits.size,
-    totalForumPosts: forumPosts.size,
-    totalRecommendations: recommendations.size,
-    activeStylists: activeStylists.size,
-    newUsersToday: newToday.size,
-    newUsersThisWeek: newThisWeek.size,
+    totalUsers: users.data().count,
+    totalWardrobeItems: wardrobeItems.data().count,
+    totalOutfits: outfits.data().count,
+    totalForumPosts: forumPosts.data().count,
+    totalRecommendations: recommendations.data().count,
+    activeStylists: activeStylists.data().count,
+    newUsersToday: newToday.data().count,
+    newUsersThisWeek: newThisWeek.data().count,
   };
 }
 
-// ─── KATEGORİ DAĞILIMI ──────────────────────────
+// ─── KATEGORI DAGILIMI ──────────────────────────
 
 export async function getCategoryStats(): Promise<CategoryStat[]> {
-  const snap = await getDocs(collection(db, 'wardrobeItems'));
+  await requireAdmin();
+  const snap = await adminDb.collection('wardrobeItems').get();
 
   const counts: Record<string, number> = {};
   let total = 0;
@@ -93,19 +86,20 @@ export async function getCategoryStats(): Promise<CategoryStat[]> {
     .sort((a, b) => b.count - a.count);
 }
 
-// ─── RENK TRENDİ ───────────────────────────────
+// ─── RENK TRENDI ───────────────────────────────
 
 export async function getColorStats(): Promise<ColorStat[]> {
-  const snap = await getDocs(query(
-    collection(db, 'wardrobeItems'),
-    where('aiAnalysis', '!=', null),
-    limit(500),
-  ));
+  await requireAdmin();
+  const snap = await adminDb.collection('wardrobeItems')
+    .orderBy('createdAt', 'desc')
+    .limit(500)
+    .get();
 
   const hexCounts: Record<string, number> = {};
 
   snap.docs.forEach(doc => {
-    const colors = doc.data().aiAnalysis?.colorHex ?? [];
+    const data = doc.data();
+    const colors = data.aiAnalysis?.dominantColors ?? data.aiAnalysis?.colorHex ?? data.color ?? [];
     colors.slice(0, 2).forEach((hex: string) => {
       if (hex) hexCounts[hex] = (hexCounts[hex] ?? 0) + 1;
     });
@@ -118,27 +112,25 @@ export async function getColorStats(): Promise<ColorStat[]> {
       label: hex,
     }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 15);  // Top 15 renk
+    .slice(0, 15);
 }
 
-// ─── KULLANICI BÜYÜME ───────────────────────────
+// ─── KULLANICI BUYUME ───────────────────────────
 
 export async function getUserGrowthStats(
   days: number = 30
 ): Promise<DailyStat[]> {
+  await requireAdmin();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
-  const snap = await getDocs(query(
-    collection(db, 'users'),
-    where('createdAt', '>=', Timestamp.fromDate(startDate)),
-    orderBy('createdAt', 'asc'),
-  ));
+  const snap = await adminDb.collection('users')
+    .where('createdAt', '>=', startDate)
+    .orderBy('createdAt', 'asc')
+    .get();
 
-  // Günlere göre grupla
   const dailyCounts: Record<string, number> = {};
 
-  // Boş günleri oluştur
   for (let i = 0; i <= days; i++) {
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);
@@ -146,7 +138,6 @@ export async function getUserGrowthStats(
     dailyCounts[key] = 0;
   }
 
-  // Gerçek verileri doldur
   snap.docs.forEach(doc => {
     const createdAt = doc.data().createdAt?.toDate();
     if (!createdAt) return;
@@ -162,15 +153,15 @@ export async function getUserGrowthStats(
   }));
 }
 
-// ─── STİLİST İSTATİSTİKLERİ ────────────────────
+// ─── STILIST ISTATISTIKLERI ────────────────────
 
 export async function getStylistStats(): Promise<StylistStat[]> {
-  const snap = await getDocs(query(
-    collection(db, 'users'),
-    where('isStylistModeActive', '==', true),
-    orderBy('suggestionsAccepted', 'desc'),
-    limit(20),
-  ));
+  await requireAdmin();
+  const snap = await adminDb.collection('users')
+    .where('isStylistModeActive', '==', true)
+    .orderBy('suggestionsAccepted', 'desc')
+    .limit(20)
+    .get();
 
   return snap.docs.map(doc => {
     const data = doc.data();
@@ -190,17 +181,17 @@ export async function getStylistStats(): Promise<StylistStat[]> {
   });
 }
 
-// ─── FORUM İSTATİSTİKLERİ ──────────────────────
+// ─── FORUM ISTATISTIKLERI ──────────────────────
 
 export async function getForumStats(): Promise<DailyStat[]> {
+  await requireAdmin();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - 30);
 
-  const snap = await getDocs(query(
-    collection(db, 'forumPosts'),
-    where('createdAt', '>=', Timestamp.fromDate(startDate)),
-    orderBy('createdAt', 'asc'),
-  ));
+  const snap = await adminDb.collection('forumPosts')
+    .where('createdAt', '>=', startDate)
+    .orderBy('createdAt', 'asc')
+    .get();
 
   const dailyCounts: Record<string, number> = {};
 

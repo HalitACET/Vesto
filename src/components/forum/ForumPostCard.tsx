@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { toggleLike, isLiked } from "@/lib/firebase/forumService";
@@ -249,12 +250,15 @@ function ReportButton({
                 <FlagIcon size={16} className="text-muted-foreground hover:text-red-500 transition-colors" />
             </button>
 
-            {open && (
+            {open && typeof document !== 'undefined' && createPortal(
                 <div 
-                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
-                    className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(false); }}
+                    className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] p-4"
                 >
-                    <div className="bg-background rounded-lg p-6 max-w-sm w-full border border-border shadow-lg">
+                    <div 
+                        onClick={(e) => { e.stopPropagation(); }}
+                        className="bg-background rounded-lg p-6 max-w-sm w-full border border-border shadow-lg"
+                    >
                         <h3 className="font-playfair text-lg text-foreground mb-4">
                             İçeriği Şikayet Et
                         </h3>
@@ -311,7 +315,8 @@ function ReportButton({
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

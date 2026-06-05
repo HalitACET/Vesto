@@ -5,7 +5,7 @@ import {
   collection, query, orderBy, limit, getDocs, where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { removeComment } from '@/lib/firebase/moderationService';
+import { removeCommentAdmin } from '@/app/actions/adminActions';
 import { toast } from 'sonner';
 
 export function CommentsTab() {
@@ -59,9 +59,13 @@ export function CommentsTab() {
                 onClick={async () => {
                   if (!confirm('Bu yorumu kaldırmak istiyor musun?'))
                     return;
-                  await removeComment(comment.id);
-                  toast.success('Yorum kaldırıldı');
-                  loadComments();
+                  const res = await removeCommentAdmin(comment.id);
+                  if (res.ok) {
+                      toast.success('Yorum kaldırıldı');
+                      loadComments();
+                  } else {
+                      toast.error('Yorum silinirken hata oluştu');
+                  }
                 }}
                 className="px-3 py-1 bg-red-600 text-white rounded
                            font-inter text-xs font-medium hover:bg-red-700

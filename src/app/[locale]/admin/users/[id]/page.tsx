@@ -164,12 +164,17 @@ export default function AdminUserDetailPage({
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2 mb-1">
                                     <h2 className="text-2xl font-light">{user.displayName}</h2>
-                                    <Badge
-                                        variant={user.status === "active" ? "default" : "outline"}
-                                        className={`text-xs ${user.status === "suspended" ? "border-destructive/50 text-destructive" : "bg-green-500/15 text-green-600 border-0"}`}
-                                    >
-                                        {t(`statusLabels.${user.status}` as Parameters<typeof t>[0])}
-                                    </Badge>
+                                    {(() => {
+                                        const sKey = (!user.status || user.status === "undefined") ? "active" : user.status;
+                                        return (
+                                            <Badge
+                                                variant={sKey === "active" ? "default" : "outline"}
+                                                className={`text-xs ${sKey === "suspended" ? "border-destructive/50 text-destructive" : "bg-green-500/15 text-green-600 border-0"}`}
+                                            >
+                                                {t(`statusLabels.${sKey}` as Parameters<typeof t>[0])}
+                                            </Badge>
+                                        );
+                                    })()}
                                 </div>
                                 {user.bio && (
                                     <p className="text-sm text-muted-foreground mb-3">{user.bio}</p>

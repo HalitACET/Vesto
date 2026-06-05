@@ -32,6 +32,7 @@ import {
 import type { WardrobeItem, AdminReviewStatus, ClothingCategory } from "@/types";
 import { getPlatformStats } from '@/lib/firebase/analyticsService';
 import Image from "next/image";
+import { ModerationTab } from "@/components/admin/ModerationTab";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -230,7 +231,7 @@ function AITagValidationTab() {
                                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                                         {item.imageUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
-                                            <Image width={800} height={800} src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                                            <Image width={800} height={800} src={item.imageUrl} alt={item.name || "Kıyafet"} className="h-full w-full object-cover" />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center">
                                                 <Shirt size={20} className="text-muted-foreground/40" />
@@ -375,13 +376,6 @@ function AITagValidationTab() {
     );
 }
 
-// ── Mock flagged posts ─────────────────────────────────────────────────────────
-
-const MOCK_FLAGGED_POSTS = [
-    { id: "p1", author: "Anonymous", title: "Selling branded items — best prices!", reason: "Spam / commercial", time: "3h ago" },
-    { id: "p2", author: "User123", title: "Is this design stolen from Zara?", reason: "IP concern", time: "1d ago" },
-];
-
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -454,34 +448,7 @@ export default function AdminPage() {
 
                     {/* Moderation tab */}
                     <TabsContent value="moderation" className="mt-6">
-                        <div className="space-y-4">
-                            {MOCK_FLAGGED_POSTS.map((post) => (
-                                <Card key={post.id} className="border-amber-500/20">
-                                    <CardContent className="flex items-start justify-between gap-4 py-5">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Flag size={13} className="text-amber-500" />
-                                                <Badge variant="outline" className="border-amber-500/30 text-amber-600 text-[10px]">
-                                                    {post.reason}
-                                                </Badge>
-                                            </div>
-                                            <p className="font-medium text-sm">{post.title}</p>
-                                            <p className="text-xs text-muted-foreground mt-0.5">
-                                                {post.author} · {post.time}
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-2 flex-shrink-0">
-                                            <Button size="sm" variant="outline" className="text-xs">
-                                                {t("moderation.remove")}
-                                            </Button>
-                                            <Button size="sm" variant="ghost" className="text-xs">
-                                                {t("moderation.dismiss")}
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                        <ModerationTab />
                     </TabsContent>
                 </Tabs>
             </div>

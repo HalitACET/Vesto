@@ -90,14 +90,20 @@ export async function overrideAiAnalysis(
   const adminUid = auth.currentUser?.uid;
   if (!adminUid) throw new Error('Not authenticated');
 
-  await updateDoc(doc(db, 'wardrobeItems', itemId), {
+  const updatePayload: Record<string, any> = {
     adminOverride: {
       ...override,
       overriddenAt: serverTimestamp(),
       overriddenBy: adminUid,
     },
     uploadStatus: 'ready',
-  });
+  };
+
+  // Sync root fields so normal user apps see the change immediately
+  if (override.category) updatePayload.category = override.category;
+  if (override.subcategory) updatePayload.subcategory = override.subcategory;
+
+  await updateDoc(doc(db, 'wardrobeItems', itemId), updatePayload);
 }
 
 // İstatistikler

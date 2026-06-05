@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllPosts, removePost,
-         restorePost } from '@/lib/firebase/moderationService';
+import { removePostAdmin, restorePostAdmin } from '@/app/actions/adminActions';
+import { getAllPosts } from '@/lib/firebase/moderationService';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -115,9 +115,15 @@ export function PostsTab() {
                     {post.isModerated ? (
                       <button
                         onClick={async () => {
-                          await restorePost(post.id);
-                          toast.success('Post geri yüklendi');
-                          loadPosts();
+                          if (!confirm('Bu postu geri yüklemek istiyor musun?'))
+                            return;
+                          const res = await restorePostAdmin(post.id);
+                          if (res.ok) {
+                              toast.success('Post geri yüklendi');
+                              loadPosts();
+                          } else {
+                              toast.error('Post geri yüklenirken hata oluştu');
+                          }
                         }}
                         className="px-3 py-1 border border-mist text-stone
                                    rounded font-inter text-xs font-medium
@@ -130,9 +136,13 @@ export function PostsTab() {
                         onClick={async () => {
                           if (!confirm('Bu postu kaldırmak istiyor musun?'))
                             return;
-                          await removePost(post.id, 'Admin kaldırdı');
-                          toast.success('Post kaldırıldı');
-                          loadPosts();
+                          const res = await removePostAdmin(post.id, 'Admin kaldırdı');
+                          if (res.ok) {
+                              toast.success('Post kaldırıldı');
+                              loadPosts();
+                          } else {
+                              toast.error('Post kaldırılırken hata oluştu');
+                          }
                         }}
                         className="px-3 py-1 bg-red-600 text-white rounded
                                    font-inter text-xs font-medium hover:bg-red-700 transition"

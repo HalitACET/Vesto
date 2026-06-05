@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getReports, resolveReport,
-         removePost, strikeUser } from '@/lib/firebase/moderationService';
+import { getReports } from '@/lib/firebase/moderationService';
+import { approveReportAdmin, approveReportAndPenalize, dismissReportAdmin } from '@/app/actions/adminActions';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -24,10 +24,13 @@ export function ReportsTab() {
 
   const handleRemovePost = async (postId: string, reportId: string) => {
     try {
-      await removePost(postId, 'Şikayet üzerine kaldırıldı');
-      await resolveReport(reportId, 'resolved');
-      toast.success('Post kaldırıldı');
-      loadReports();
+      const res = await approveReportAdmin(reportId);
+      if (res.ok) {
+        toast.success('Post kaldırıldı');
+        loadReports();
+      } else {
+        toast.error(res.error || 'İşlem başarısız');
+      }
     } catch {
       toast.error('İşlem başarısız');
     }
@@ -39,15 +42,18 @@ export function ReportsTab() {
     reportId: string
   ) => {
     try {
-      const strikes = await strikeUser(userId, 'Uygunsuz içerik');
-      await removePost(postId, 'Şikayet üzerine kaldırıldı');
-      await resolveReport(reportId, 'resolved');
-      toast.success(
-        strikes >= 3
-          ? `Post kaldırıldı. Kullanıcı ${strikes} strike ile askıya alındı!`
-          : `Post kaldırıldı. Kullanıcıya ${strikes}. uyarı verildi.`
-      );
-      loadReports();
+      const res = await approveReportAndPenalize(reportId);
+      if (res.ok) {
+          const strikes = res.data?.strikes || 1;
+          toast.success(
+            strikes >= 3
+              ? `Post kaldırıldı. Kullanıcı ${strikes} strike ile askıya alındı!`
+              : `Post kaldırıldı. Kullanıcıya ${strikes}. uyarı verildi.`
+          );
+          loadReports();
+      } else {
+          toast.error(res.error || 'İşlem başarısız');
+      }
     } catch {
       toast.error('İşlem başarısız');
     }
@@ -55,9 +61,13 @@ export function ReportsTab() {
 
   const handleDismiss = async (reportId: string) => {
     try {
-      await resolveReport(reportId, 'dismissed');
-      toast.success('Şikayet reddedildi');
-      loadReports();
+      const res = await dismissReportAdmin(reportId);
+      if (res.ok) {
+          toast.success('Şikayet reddedildi');
+          loadReports();
+      } else {
+          toast.error(res.error || 'İşlem başarısız');
+      }
     } catch {
       toast.error('İşlem başarısız');
     }

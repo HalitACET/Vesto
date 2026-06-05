@@ -6,6 +6,7 @@ import { AiMonitorItem } from '@/types/admin';
 import { AiMonitorTable } from '@/components/admin/AiMonitorTable';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 type FilterType = 'all' | 'pending' | 'failed' | 'no_material';
 
@@ -35,7 +36,8 @@ export default function AiMonitorPage() {
   };
 
   return (
-    <div className="p-6">
+    <DashboardLayout>
+      <div className="p-6">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -94,7 +96,8 @@ export default function AiMonitorPage() {
       ) : (
         <AiMonitorTable items={items} onUpdate={loadData} />
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
 

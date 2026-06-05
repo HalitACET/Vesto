@@ -5,6 +5,7 @@ import { getModerationStats } from '@/lib/firebase/moderationService';
 import { ReportsTab } from '@/components/admin/moderation/ReportsTab';
 import { PostsTab } from '@/components/admin/moderation/PostsTab';
 import { CommentsTab } from '@/components/admin/moderation/CommentsTab';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { cn } from '@/lib/utils';
 
 type TabType = 'reports' | 'posts' | 'comments';
@@ -22,7 +23,8 @@ export default function ModerationPage() {
   }, []);
 
   return (
-    <div className="p-6">
+    <DashboardLayout>
+      <div className="p-6">
 
       {/* Header */}
       <div className="mb-6">
@@ -103,5 +105,6 @@ export default function ModerationPage() {
         {activeTab === 'comments' && <CommentsTab />}
       </div>
     </div>
+    </DashboardLayout>
   );
 }

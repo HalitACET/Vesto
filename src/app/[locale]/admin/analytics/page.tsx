@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { StylistStat } from '@/types/analytics';
 import { exportToCsv } from '@/lib/pdf/pdfService';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 const LineChart: any = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
 const Line: any = dynamic(() => import('recharts').then((mod) => mod.Line), { ssr: false });
@@ -52,6 +53,7 @@ export default function AnalyticsPage() {
   }, []);
 
   return (
+    <DashboardLayout>
     <div className="p-6 space-y-8">
 
       {/* Header */}
@@ -217,6 +219,7 @@ export default function AnalyticsPage() {
       )}
 
     </div>
+    </DashboardLayout>
   );
 }
 

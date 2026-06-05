@@ -45,12 +45,21 @@ function ItemSelectCard({
                     : "border-border hover:border-muted-foreground/40"
             }`}
         >
-            <Image
-                src={item.bgRemovedUrl || item.thumbnailUrl || item.imageUrl}
-                alt={item.name || item.brand || "Kıyafet"}
-                fill
-                className="object-contain bg-muted/10 p-1"
-            />
+            {(() => {
+                const src = item.bgRemovedUrl || item.thumbnailUrl || item.imageUrl;
+                return src ? (
+                    <Image
+                        src={src}
+                        alt={item.name || item.brand || "Kıyafet"}
+                        fill
+                        className="object-contain bg-muted/10 p-1"
+                    />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/10 text-[10px] text-muted-foreground">
+                        Görsel Yok
+                    </div>
+                );
+            })()}
             {selected && (
                 <div className="absolute inset-0 bg-accent/10 flex items-center justify-center">
                     <div className="bg-accent text-accent-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow">
@@ -177,12 +186,19 @@ export function SuggestOutfitSheet({
                                         className="aspect-square rounded-lg border-2 border-dashed border-border bg-muted/20 overflow-hidden relative flex items-center justify-center"
                                     >
                                         {item ? (
-                                            <Image
-                                                src={item.bgRemovedUrl || item.thumbnailUrl || item.imageUrl}
-                                                alt={item.name || ""}
-                                                fill
-                                                className="object-contain p-1"
-                                            />
+                                            (() => {
+                                                const src = item.bgRemovedUrl || item.thumbnailUrl || item.imageUrl;
+                                                return src ? (
+                                                    <Image
+                                                        src={src}
+                                                        alt={item.name || "Kıyafet"}
+                                                        fill
+                                                        className="object-contain p-1"
+                                                    />
+                                                ) : (
+                                                    <span className="text-[10px] opacity-50">Yok</span>
+                                                );
+                                            })()
                                         ) : (
                                             <span className="text-lg opacity-40">{tab.emoji}</span>
                                         )}
