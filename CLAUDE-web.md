@@ -1,7 +1,7 @@
-# CLAUDE.md — Vesto AI Web
+# CLAUDE.md — Vesto Web
 
-> Bu dosya, Vesto AI projesinin web tarafının (admin/stilist paneli) kalıcı bağlamını içerir.
-> Önce kök dizindeki `/CLAUDE.md`'yi okuduğunu varsay — bu dosya web-spesifik detaylar içerir.
+> Önce kök dizindeki `../CLAUDE.md`'yi oku (ürün hedefi, repo düzeni, veri sözleşmesi, doğrulama komutları, güncel faz durumu). Next.js sürüm uyarısı için `AGENTS.md`'ye bak.
+> Bu dosya, Vesto web tarafının (admin/stilist paneli) kalıcı bağlamını içerir.
 
 ---
 
@@ -21,16 +21,18 @@ Web tarafı **son kullanıcı için değil**, üç farklı role hizmet eder:
 
 | Katman | Teknoloji |
 |---|---|
-| **Framework** | Next.js 16 (App Router) |
-| **Dil** | TypeScript (strict mode) |
+| **Framework** | Next.js 16.2 (App Router) + React 19.2 |
+| **Dil** | TypeScript 5 (strict mode) |
 | **UI Library** | Shadcn/ui + base-ui/react |
 | **Styling** | Tailwind CSS v4 |
 | **State** | React + Server Actions |
 | **Drag & Drop** | @dnd-kit/core, @dnd-kit/sortable |
 | **Animation** | framer-motion |
 | **Icons** | lucide-react |
-| **Backend** | Firebase Admin SDK (server) + Client SDK (auth) |
-| **i18n** | next-intl (Türkçe default + İngilizce) |
+| **Charts** | recharts 3 |
+| **Backend** | Firebase Admin SDK 13 (server) + Firebase JS SDK 12 (auth) |
+| **i18n** | next-intl 4 (Türkçe default + İngilizce) |
+| **E2E Test** | Playwright |
 | **Hosting** | Vercel (planlanan) |
 
 ---
@@ -171,27 +173,6 @@ acceptedAt: Timestamp | null;
 
 ---
 
-## 📅 Yol Haritası
-
-| Hafta | İş Paketi | Durum |
-|---|---|---|
-| 1 | Mimari Kurulum (Next.js + Firebase Admin) | ✅ |
-| 2 | Dashboard UI (Shadcn + lüks tema) | ✅ |
-| 3 | Auth & RBAC (token-based, HTTP-only cookies) | ✅ |
-| 4 | Kullanıcı Yönetimi | ✅ |
-| 5 | Gardırop Modülü | ✅ |
-| 6 | AI Analiz Monitörü (server actions, real Firestore writes) | ✅ |
-| 7 | Canvas Altyapısı (dnd-kit) | ✅ |
-| 8 | Kombin Editörü (Save outfit functional) | ✅ |
-| 9 | Sosyal Moderasyon | ⏳ |
-| 10 | Global İstatistikler | ⏳ |
-| 11 | Kullanıcı Raporları (PDF) | ⏳ |
-| 12 | Performans & SEO | ⏳ |
-| 13 | E2E Testing (Playwright) | ⏳ |
-| 14 | Deployment (Vercel) | ⏳ |
-
----
-
 ## ⚖️ Mimari Prensipler
 
 1. **TypeScript strict** — `any` yasak
@@ -221,16 +202,9 @@ acceptedAt: Timestamp | null;
 
 ## 🔧 Bilinen Tech Debt
 
-Hafta 9'a geçmeden önce kapatılması planlanan:
+Lansman öncesi öncelikli konular için kök `../CLAUDE.md` → "Güncel durum" bölümüne bak. Web'e özgü diğer borçlar:
 
-1. **Middleware proxy deprecation** — Next.js 16 convention warning'i
+1. **Middleware proxy deprecation** — Next.js 16 convention warning'i (`src/middleware.ts`)
 2. **Pagination** — Admin users sayfasında tüm kullanıcılar tek seferde çekiliyor
 3. **Prettier** — Kurulu değil, kod format'ı manuel
-4. **Test verisi eksikliği** — AI Validation ve Save Outfit fonksiyonel test edilemedi (mobile veri üretmedi)
-
-HAFTA 15 (POLISH) - TODO:
-- Mannequin SVG asset'lerini değiştir
-  - Şu an: çöp adam stili (functional placeholder)
-  - Hedef: profesyonel moda dergisi tonu
-  - Yapılabilirlikler: Envato, Figma Community, custom asset
-  - Süre: 30 dakika - 2 saat
+4. **Mannequin SVG asset'leri** — şu an çöp adam stili placeholder; hedef profesyonel moda dergisi tonu
