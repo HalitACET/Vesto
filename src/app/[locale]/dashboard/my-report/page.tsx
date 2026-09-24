@@ -5,6 +5,7 @@ import { generateUserReport } from '@/lib/firebase/reportService';
 import { useAuth } from '@/hooks/useAuth';
 import { ReportContent } from '@/components/admin/report/ReportContent';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { StyleInsights } from '@/components/report/StyleInsights';
 
 export default function MyReportPage() {
   const { vestoUser } = useAuth();
@@ -49,7 +50,10 @@ export default function MyReportPage() {
           {loading ? (
              <ReportSkeleton />
           ) : report ? (
-             <ReportContent report={report} />
+             <>
+               <StyleInsights report={report} />
+               <ReportContent report={report} />
+             </>
           ) : (
             <div>Rapor yüklenemedi.</div>
           )}
