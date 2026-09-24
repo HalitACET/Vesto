@@ -24,6 +24,7 @@ export default function PublicProfileClient({
     userId: string;
 }) {
     const tWardrobe = useTranslations("wardrobe");
+    const tProfile = useTranslations("publicProfile");
     const locale = useLocale();
     const router = useRouter();
 
@@ -50,6 +51,9 @@ export default function PublicProfileClient({
             if (snap.exists()) {
                 setUser({ uid: snap.id, ...snap.data() } as VestoUser);
             }
+            setLoading(false);
+        }, (err) => {
+            console.error("PublicProfileClient userUnsub error:", err);
             setLoading(false);
         });
 
@@ -183,7 +187,7 @@ export default function PublicProfileClient({
 
                                 {/* Actions */}
                                 {!isOwnProfile && currentUser && (
-                                    <div className="flex justify-center gap-2">
+                                    <div className="flex justify-center items-center gap-2">
                                         {currentUser.isStylistModeActive && (
                                             <Link href={`/stylist/editor/${userId}`}>
                                                 <button
@@ -192,6 +196,17 @@ export default function PublicProfileClient({
                                                     <span className="text-base">✨</span>
                                                     <span>Kombin Öner</span>
                                                 </button>
+                                            </Link>
+                                        )}
+                                        {(user.isStylistModeActive || currentUser.isStylistModeActive) && (
+                                            <Link href={`/dashboard/messages?chat=${userId}`}>
+                                                <Button
+                                                    variant="outline"
+                                                    className="flex items-center gap-2 border-accent/20 text-accent hover:bg-accent/10 h-9 px-4 rounded-md"
+                                                >
+                                                    <span>💬</span>
+                                                    <span>{tProfile("sendMessage")}</span>
+                                                </Button>
                                             </Link>
                                         )}
                                         {followLoading ? (
@@ -317,11 +332,15 @@ export default function PublicProfileClient({
                                 >
                                     <div className="relative aspect-[3/4] overflow-hidden bg-muted">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <Image width={800} height={800}
-                                            src={item.imageUrl}
-                                            alt={item.name}
-                                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
+                                        {item.imageUrl ? (
+                                            <Image width={800} height={800}
+                                                src={item.imageUrl}
+                                                alt={item.name || tProfile("itemImageAlt")}
+                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground bg-muted">Resim yok</div>
+                                        )}
                                     </div>
                                     <CardContent className="p-3">
                                         <p className="text-sm font-medium truncate text-foreground">{item.name}</p>
@@ -347,11 +366,15 @@ export default function PublicProfileClient({
                             <div className="space-y-4 pt-2">
                                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted border border-border">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <Image width={800} height={800}
-                                        src={selectedItem.imageUrl}
-                                        alt={selectedItem.name}
-                                        className="h-full w-full object-cover"
-                                    />
+                                    {selectedItem.imageUrl ? (
+                                        <Image width={800} height={800}
+                                            src={selectedItem.imageUrl}
+                                            alt={selectedItem.name || tProfile("itemDetailAlt")}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground bg-muted">Resim bulunamadı</div>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>
