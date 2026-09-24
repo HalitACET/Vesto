@@ -50,8 +50,9 @@ src/
 ├── hooks/                   # useAuth, useWardrobe, useWeather
 ├── lib/firebase/            # config, auth, firestore, storage
 └── types/                   # TypeScript tip tanımları
-firestore.rules              # Güvenlik kuralları (user/stylist/admin)
 ```
+
+> Firestore kuralları firebase/rules/ altında (ayrı `vesto-firebase` reposu). Bu repoda kural dosyası tutulmaz.
 
 ---
 
