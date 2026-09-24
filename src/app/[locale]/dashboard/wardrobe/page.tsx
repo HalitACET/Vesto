@@ -25,6 +25,7 @@ import { storage, db, auth } from "@/lib/firebase/config";
 import type { ClothingCategory, WardrobeItem } from "@/types";
 import { toggleItemPublic } from "@/lib/firebase/profileService";
 import Image from "next/image";
+import { ItemDetailModal } from "@/components/wardrobe/ItemDetailModal";
 
 const SUBCATEGORIES: Record<string, string[]> = {
     tops: ["tshirt", "shirt", "sweater", "hoodie", "blouse", "tanktop"],
@@ -48,6 +49,7 @@ export default function WardrobePage() {
     const t = useTranslations("wardrobe");
     const tCommon = useTranslations("common");
     const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
+    const [detailOpen, setDetailOpen] = useState(false);
     const [activeCategory, setActiveCategory] = useState<string>("all");
     const [search, setSearch] = useState("");
     const [uploadOpen, setUploadOpen] = useState(false);
@@ -64,8 +66,15 @@ export default function WardrobePage() {
     const [isPublic, setIsPublic] = useState(false);
 
     const filtered = items.filter((item) => {
-        const matchesCategory = activeCategory === "all" || item.category === activeCategory;
-        const matchesSearch = (item.name || "").toLowerCase().includes(search.toLowerCase());
+        const CATEGORY_ALIASES: Record<string, string[]> = {
+            tops: ['tops', 'top'],
+            bottoms: ['bottoms', 'bottom'],
+            shoes: ['shoes', 'footwear'],
+            accessories: ['accessories', 'accessory'],
+        };
+        const matchesCategory = activeCategory === 'all' ||
+            (CATEGORY_ALIASES[activeCategory] ?? [activeCategory]).includes(item.category);
+        const matchesSearch = (item.name || '').toLowerCase().includes(search.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
@@ -379,15 +388,19 @@ export default function WardrobePage() {
                             >
                                 <Card 
                                     data-testid="wardrobe-item-card"
-                                    onClick={() => setSelectedItem(item)}
+                                    onClick={() => { setSelectedItem(item); setDetailOpen(true); }}
                                     className="group overflow-hidden border-border hover:border-accent/30 transition-all cursor-pointer"
                                 >
                                     <div className="relative aspect-[3/4] overflow-hidden bg-muted flex items-center justify-center">
                                         {item.imageUrl ? (
-                                            <Image width={800} height={800}
-                                                src={item.imageUrl}
+                                            <Image
+                                                width={300}
+                                                height={400}
+                                                src={item.thumbnailUrl || item.imageUrl}
                                                 alt={item.name || "Kıyafet"}
-                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                                loading="lazy"
                                             />
                                         ) : (
                                             <span className="text-xs text-muted-foreground text-center">Görsel Yok</span>
@@ -537,6 +550,11 @@ export default function WardrobePage() {
                     )}
                 </DialogContent>
             </Dialog>
+            <ItemDetailModal
+                item={selectedItem}
+                open={detailOpen}
+                onClose={() => setDetailOpen(false)}
+            />
         </DashboardLayout>
     );
 }
