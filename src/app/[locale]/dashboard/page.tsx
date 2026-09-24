@@ -15,6 +15,8 @@ import { motion } from "framer-motion";
 import { Plus, Shirt, Palette, CloudSun, ArrowRight, Sparkles } from "lucide-react";
 import type { VestoUser } from "@/types";
 import Image from "next/image";
+import { WelcomeTour } from "@/components/onboarding/WelcomeTour";
+import { TodayOutfitWidget } from "@/components/dashboard/TodayOutfitWidget";
 
 // ── Components ───────────────────────────────────────────────────────────────
 
@@ -84,7 +86,7 @@ function WardrobeSummary({ userId }: { userId: string }) {
 
 function TodayWeatherSummary({ city }: { city?: string }) {
     const t = useTranslations("dashboard");
-    const { weather, loading } = useWeather(city || "Bursa");
+    const { weather, loading } = useWeather(city || "Istanbul");
 
     if (loading) return <Skeleton className="h-32 w-full rounded-2xl" />;
 
@@ -94,7 +96,7 @@ function TodayWeatherSummary({ city }: { city?: string }) {
                 <CardTitle className="text-xs font-semibold tracking-wider text-accent uppercase flex items-center gap-2">
                     <CloudSun size={14} />
                     {t("todaySummary", {
-                        city: weather?.city ?? "Bursa",
+                        city: weather?.city ?? "Istanbul",
                         temp: weather?.temperature ?? 0,
                         condition: weather?.condition ?? "cloudy"
                     })}
@@ -195,6 +197,7 @@ function CreateOutfitCTA() {
 
 export default function DashboardPage() {
     const { vestoUser, loading: authLoading } = useAuth();
+    const { weather } = useWeather(vestoUser?.location || 'Istanbul');
 
     if (authLoading) {
         return (
@@ -216,6 +219,7 @@ export default function DashboardPage() {
 
     return (
         <DashboardLayout>
+            <WelcomeTour />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -227,6 +231,8 @@ export default function DashboardPage() {
                     <WardrobeSummary userId={vestoUser.uid} />
                     <TodayWeatherSummary city={vestoUser.location} />
                 </div>
+
+                <TodayOutfitWidget weather={weather?.condition} />
 
                 <RecentOutfits userId={vestoUser.uid} />
 
