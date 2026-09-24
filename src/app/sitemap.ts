@@ -1,5 +1,4 @@
 import type { MetadataRoute } from 'next';
-import { collection, getDocs, query, limit } from 'firebase/firestore';
 import { adminDb } from '@/lib/firebase/server';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -27,10 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const usersSnap = await getDocs(query(
-      collection(adminDb, 'users'),
-      limit(100)
-    ));
+    const usersSnap = await adminDb.collection('users').limit(100).get();
 
     const profilePages: MetadataRoute.Sitemap = usersSnap.docs.map(doc => ({
       url: `${baseUrl}/u/${doc.id}`,

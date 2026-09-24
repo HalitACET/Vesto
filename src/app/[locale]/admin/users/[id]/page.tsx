@@ -165,7 +165,7 @@ export default function AdminUserDetailPage({
                                 <div className="flex flex-wrap items-center gap-2 mb-1">
                                     <h2 className="text-2xl font-light">{user.displayName}</h2>
                                     {(() => {
-                                        const sKey = (!user.status || user.status === "undefined") ? "active" : user.status;
+                                        const sKey = (!user.status || (user.status as string) === "undefined") ? "active" : user.status;
                                         return (
                                             <Badge
                                                 variant={sKey === "active" ? "default" : "outline"}

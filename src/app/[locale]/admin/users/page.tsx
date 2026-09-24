@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
                                         </td>
                                         <td className="px-5 py-3">
                                             {(() => {
-                                                const sKey = (!user.status || user.status === "undefined") ? "active" : user.status;
+                                                const sKey = (!user.status || (user.status as string) === "undefined") ? "active" : user.status;
                                                 return (
                                                     <Badge
                                                         variant={STATUS_VARIANTS[sKey as keyof typeof STATUS_VARIANTS] || "default"}
