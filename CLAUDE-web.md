@@ -111,12 +111,12 @@ Web tarafı **son kullanıcı için değil**, üç farklı role hizmet eder:
 1. Login → Firebase Client SDK ile email/password
 2. Client'tan ID token al → POST `/api/auth/session`
 3. Server: token doğrula (Admin SDK) → Firestore'dan role çek → HTTP-only cookie set et
-4. Middleware her request'te cookie'yi parse eder, role-based route protection yapar
+4. Middleware her request'te cookie'yi parse eder, role-based route protection yapar (⚠️ cookie şu an imzasız — Faz 1b)
 
 **Kritik güvenlik kararları:**
 - Admin SDK private key **env variable'larda** (`FIREBASE_ADMIN_*`) — JSON dosyası YOK
 - Cookie **HTTP-only** (XSS koruması)
-- Cookie'deki role bilgisine **güvenilmez** — her request'te Firestore'dan gerçek role çekilir
+- ⚠️ **Hedef, şu an geçerli DEĞİL:** Cookie'deki role bilgisine güvenilmemeli, her request'te Firestore'dan gerçek role çekilmeli. Şu an `vesto_session` cookie'si imzasız base64 JSON ve middleware/server action'lar içindeki role'e güveniyor — **güvensiz, Faz 1b'de düzeltilecek** (bkz. `../CLAUDE.md`).
 - Tüm mutation'lar Server Actions üzerinden — client direkt Firestore'a yazmaz
 - `requireRole('admin')`, `requireRole('verified_stylist')` helper'ları ile yetki kontrolü
 
