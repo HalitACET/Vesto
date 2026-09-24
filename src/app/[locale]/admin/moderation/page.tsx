@@ -28,10 +28,10 @@ export default function ModerationPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="font-playfair text-2xl text-onyx">
+        <h1 className="font-playfair text-2xl text-foreground">
           Forum Moderasyonu
         </h1>
-        <p className="font-inter text-sm text-stone mt-1">
+        <p className="font-inter text-sm text-muted-foreground mt-1">
           Şikayetleri incele, içerik kaldır, kullanıcı uyar
         </p>
       </div>
@@ -42,42 +42,42 @@ export default function ModerationPage() {
           'rounded-lg p-4 transition-colors',
           stats.pendingReports > 0
             ? 'bg-red-50 border border-red-200'
-            : 'bg-mist border border-transparent'
+            : 'bg-muted border border-transparent'
         )}>
           <div className={cn(
             'font-playfair text-3xl font-semibold',
-            stats.pendingReports > 0 ? 'text-red-700' : 'text-onyx'
+            stats.pendingReports > 0 ? 'text-red-700' : 'text-foreground'
           )}>
             {stats.pendingReports}
           </div>
           <div className={cn(
             'font-inter text-xs mt-1',
-            stats.pendingReports > 0 ? 'text-red-600 font-medium' : 'text-stone'
+            stats.pendingReports > 0 ? 'text-red-600 font-medium' : 'text-muted-foreground'
           )}>
             Bekleyen Şikayet
             {stats.pendingReports > 0 && ' ⚠️'}
           </div>
         </div>
-        <div className="bg-mist rounded-lg p-4">
-          <div className="font-playfair text-3xl font-semibold text-onyx">
+        <div className="bg-muted rounded-lg p-4">
+          <div className="font-playfair text-3xl font-semibold text-foreground">
             {stats.totalPosts}
           </div>
-          <div className="font-inter text-xs text-stone mt-1">
+          <div className="font-inter text-xs text-muted-foreground mt-1">
             Toplam Post
           </div>
         </div>
-        <div className="bg-mist rounded-lg p-4">
-          <div className="font-playfair text-3xl font-semibold text-onyx">
+        <div className="bg-muted rounded-lg p-4">
+          <div className="font-playfair text-3xl font-semibold text-foreground">
             {stats.moderatedPosts}
           </div>
-          <div className="font-inter text-xs text-stone mt-1">
+          <div className="font-inter text-xs text-muted-foreground mt-1">
             Kaldırılan Post
           </div>
         </div>
       </div>
 
       {/* Tab Bar */}
-      <div className="flex border-b border-mist mb-6 gap-6">
+      <div className="flex border-b border-border mb-6 gap-6">
         {([
           { key: 'reports', label: 'Şikayetler' },
           { key: 'posts', label: 'Postlar' },
@@ -89,8 +89,8 @@ export default function ModerationPage() {
             className={cn(
               'pb-3 font-inter text-sm font-semibold transition',
               activeTab === tab.key
-                ? 'text-onyx border-b-2 border-onyx -mb-px'
-                : 'text-stone hover:text-onyx'
+                ? 'text-foreground border-b-2 border-foreground -mb-px'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {tab.label}

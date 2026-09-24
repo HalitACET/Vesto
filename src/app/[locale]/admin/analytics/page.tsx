@@ -58,10 +58,10 @@ export default function AnalyticsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="font-playfair text-2xl text-onyx">
+        <h1 className="font-playfair text-2xl text-foreground">
           Platform İstatistikleri
         </h1>
-        <p className="font-inter text-sm text-stone mt-1">
+        <p className="font-inter text-sm text-muted-foreground mt-1">
           Vesto'nun büyümesi ve içerik trendleri
         </p>
       </div>
@@ -163,12 +163,12 @@ export default function AnalyticsPage() {
                 className="flex flex-col items-center gap-1"
               >
                 <div
-                  className="w-10 h-10 rounded-full border border-mist
+                  className="w-10 h-10 rounded-full border border-border
                                shadow-sm"
                   style={{ backgroundColor: color.hex }}
                   title={color.hex}
                 />
-                <span className="font-inter text-xs text-stone">
+                <span className="font-inter text-xs text-muted-foreground">
                   {color.count}
                 </span>
               </div>
@@ -245,25 +245,25 @@ function PlatformSummary({ stats }: { stats: any }) {
           key={card.label}
           className={cn(
             'rounded-lg p-4',
-            card.highlight ? 'bg-onyx text-pearl' : 'bg-mist'
+            card.highlight ? 'bg-primary text-primary-foreground' : 'bg-muted'
           )}
         >
           <div className={cn(
             'font-playfair text-3xl',
-            card.highlight ? 'text-pearl' : 'text-onyx'
+            card.highlight ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {card.value}
           </div>
           <div className={cn(
             'font-inter text-xs mt-1',
-            card.highlight ? 'text-pearl/70' : 'text-stone'
+            card.highlight ? 'text-primary-foreground/70' : 'text-muted-foreground'
           )}>
             {card.label}
           </div>
           {card.sub && (
             <div className={cn(
               'font-inter text-xs mt-0.5',
-              card.highlight ? 'text-pearl/50' : 'text-stone/70'
+              card.highlight ? 'text-primary-foreground/50' : 'text-muted-foreground/70'
             )}>
               {card.sub}
             </div>
@@ -295,7 +295,7 @@ function ChartCard({
 function StylistLeaderboard({ stylists }: { stylists: StylistStat[] }) {
   if (stylists.length === 0) {
     return (
-      <p className="font-inter text-sm text-stone text-center py-8">
+      <p className="font-inter text-sm text-muted-foreground text-center py-8">
         Henüz aktif stilist yok
       </p>
     );
@@ -305,54 +305,54 @@ function StylistLeaderboard({ stylists }: { stylists: StylistStat[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-mist">
+          <tr className="border-b border-border">
             <th className="text-left pb-3 font-inter text-xs
                            font-semibold uppercase tracking-widest
-                           text-stone">
+                           text-muted-foreground">
               #
             </th>
             <th className="text-left pb-3 font-inter text-xs
                            font-semibold uppercase tracking-widest
-                           text-stone">
+                           text-muted-foreground">
               Stilist
             </th>
             <th className="text-right pb-3 font-inter text-xs
                            font-semibold uppercase tracking-widest
-                           text-stone">
+                           text-muted-foreground">
               Öneri
             </th>
             <th className="text-right pb-3 font-inter text-xs
                            font-semibold uppercase tracking-widest
-                           text-stone">
+                           text-muted-foreground">
               Kabul
             </th>
             <th className="text-right pb-3 font-inter text-xs
                            font-semibold uppercase tracking-widest
-                           text-stone">
+                           text-muted-foreground">
               Oran
             </th>
             <th className="text-right pb-3 font-inter text-xs
                            font-semibold uppercase tracking-widest
-                           text-stone">
+                           text-muted-foreground">
               Puan
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-mist">
+        <tbody className="divide-y divide-border">
           {stylists.map((stylist, i) => (
-            <tr key={stylist.uid} className="hover:bg-mist/20">
-              <td className="py-3 font-inter text-sm text-stone">
+            <tr key={stylist.uid} className="hover:bg-muted/20">
+              <td className="py-3 font-inter text-sm text-muted-foreground">
                 {i + 1}
               </td>
               <td className="py-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-mist
+                  <div className="w-7 h-7 rounded-full bg-muted
                                   flex items-center justify-center">
-                    <span className="font-inter text-xs text-onyx">
+                    <span className="font-inter text-xs text-foreground">
                       {stylist.displayName.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="font-inter text-sm text-onyx">
+                  <span className="font-inter text-sm text-foreground">
                     {stylist.displayName}
                   </span>
                   {stylist.acceptRate >= 70 &&
@@ -361,10 +361,10 @@ function StylistLeaderboard({ stylists }: { stylists: StylistStat[] }) {
                   )}
                 </div>
               </td>
-              <td className="py-3 text-right font-inter text-sm text-onyx">
+              <td className="py-3 text-right font-inter text-sm text-foreground">
                 {stylist.suggestionsSent}
               </td>
-              <td className="py-3 text-right font-inter text-sm text-onyx">
+              <td className="py-3 text-right font-inter text-sm text-foreground">
                 {stylist.suggestionsAccepted}
               </td>
               <td className="py-3 text-right">
@@ -374,12 +374,12 @@ function StylistLeaderboard({ stylists }: { stylists: StylistStat[] }) {
                     ? 'text-green-600'
                     : stylist.acceptRate >= 50
                       ? 'text-amber-600'
-                      : 'text-stone'
+                      : 'text-muted-foreground'
                 )}>
                   %{stylist.acceptRate}
                 </span>
               </td>
-              <td className="py-3 text-right font-inter text-sm text-onyx">
+              <td className="py-3 text-right font-inter text-sm text-foreground">
                 {stylist.averageRating > 0
                   ? `★ ${stylist.averageRating.toFixed(1)}`
                   : '—'}
@@ -395,7 +395,7 @@ function StylistLeaderboard({ stylists }: { stylists: StylistStat[] }) {
 function AnalyticsSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="h-8 w-64 bg-mist rounded" />
+      <div className="h-8 w-64 bg-muted rounded" />
       <StatsSkeleton />
       <ChartSkeleton />
       <div className="grid grid-cols-2 gap-6">
@@ -410,12 +410,12 @@ function StatsSkeleton() {
   return (
     <div className="grid grid-cols-4 gap-4 animate-pulse">
       {[1,2,3,4,5,6,7].map(i => (
-        <div key={i} className="h-20 bg-mist rounded-lg" />
+        <div key={i} className="h-20 bg-muted rounded-lg" />
       ))}
     </div>
   );
 }
 
 function ChartSkeleton() {
-  return <div className="h-80 bg-mist rounded-lg animate-pulse" />;
+  return <div className="h-80 bg-muted rounded-lg animate-pulse" />;
 }
