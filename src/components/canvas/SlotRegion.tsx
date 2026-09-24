@@ -1,6 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import { useTranslations } from "next-intl";
 import { X, Plus } from "lucide-react";
 import type { WardrobeItem, ClothingCategory } from "@/types";
 import Image from "next/image";
@@ -11,22 +12,22 @@ export type SlotType = "accessory" | "top" | "bottom" | "shoes";
 
 // Hangi kategori hangi slot'a düşer
 const SLOT_VALID_CATEGORIES: Record<SlotType, ClothingCategory[]> = {
-    accessory: ["accessories", "accessory", "jewelry", "bags"],
-    top:       ["tops", "top", "outerwear", "dresses"],
-    bottom:    ["bottoms", "bottom", "dresses"],
-    shoes:     ["shoes", "footwear"],
+    accessory: ['accessories', 'accessory', 'jewelry', 'bags'],
+    top:       ['tops', 'top', 'outerwear', 'dresses'],
+    bottom:    ['bottoms', 'bottom', 'dresses'],
+    shoes:     ['shoes', 'footwear'],
 };
 
 export function isValidForSlot(itemCategory: ClothingCategory, slot: SlotType): boolean {
     return SLOT_VALID_CATEGORIES[slot]?.includes(itemCategory) ?? false;
 }
 
-// Slot meta bilgileri
-const SLOT_META: Record<SlotType, { label: string; hint: string; icon: string }> = {
-    accessory: { label: "Aksesuar",  hint: "Şapka, çanta, takı...", icon: "◈"  },
-    top:       { label: "Üst",       hint: "Tişört, gömlek, ceket...", icon: "▣" },
-    bottom:    { label: "Alt",       hint: "Pantolon, etek...", icon: "▥"        },
-    shoes:     { label: "Ayakkabı",  hint: "Sürükle veya tıkla", icon: "⊕"     },
+// Slot icons; labels/hints come from messages (canvas.slots.<slot>)
+const SLOT_ICONS: Record<SlotType, string> = {
+    accessory: '◈',
+    top:       '▣',
+    bottom:    '▥',
+    shoes:     '⊕',
 };
 
 // ── Slot Position Config (mannequin koordinatları) ────────────────────────────
@@ -38,10 +39,10 @@ export interface SlotPosition {
 }
 
 export const SLOT_POSITIONS: Record<SlotType, SlotPosition> = {
-    accessory: { top: 10,  height: 110, widthPct: 50 },
-    top:       { top: 120, height: 210, widthPct: 70 },
-    bottom:    { top: 330, height: 210, widthPct: 65 },
-    shoes:     { top: 548, height: 140, widthPct: 60 },
+    accessory: { top: 8,   height: 115, widthPct: 52 },
+    top:       { top: 118, height: 215, widthPct: 72 },
+    bottom:    { top: 328, height: 215, widthPct: 67 },
+    shoes:     { top: 545, height: 145, widthPct: 62 },
 };
 
 // ── SlotRegion Component ──────────────────────────────────────────────────────
@@ -54,7 +55,12 @@ interface SlotRegionProps {
 
 export function SlotRegion({ slotType, item, onClear }: SlotRegionProps) {
     const pos    = SLOT_POSITIONS[slotType];
-    const meta   = SLOT_META[slotType];
+    const t      = useTranslations("canvas.slots");
+    const meta   = {
+        label: t(`${slotType}.label`),
+        hint:  t(`${slotType}.hint`),
+        icon:  SLOT_ICONS[slotType],
+    };
 
     const { setNodeRef, isOver } = useDroppable({
         id: `slot-${slotType}`,
@@ -107,7 +113,7 @@ export function SlotRegion({ slotType, item, onClear }: SlotRegionProps) {
                             opacity-0 group-hover:opacity-100
                             transition-opacity shadow-md z-10
                         "
-                        aria-label={`${meta.label} kaldır`}
+                        aria-label={t("remove", { label: meta.label })}
                     >
                         <X size={10} strokeWidth={3} />
                     </button>

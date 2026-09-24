@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
     DndContext,
@@ -9,7 +10,7 @@ import {
     DragStartEvent,
     type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { Save, Trash2, Sparkles, User } from "lucide-react";
+import { Save, Trash2, Sparkles, Shuffle, User } from "lucide-react";
 
 import { DashboardLayout }       from "@/components/layout/DashboardLayout";
 import { MannequinCanvas, getMannequinType, EMPTY_SLOTS } from "@/components/canvas/MannequinCanvas";
@@ -22,7 +23,7 @@ import { Label }                 from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useWardrobe }           from "@/hooks/useWardrobe";
 import { useAuth }               from "@/hooks/useAuth";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, updateDoc, collection, serverTimestamp, getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 
 import type {
@@ -58,9 +59,11 @@ interface SaveModalProps {
     slots:     SlotState;
     onSaved:   (outfitId: string) => void;
     vestoUser: any;
+    editOutfitId?: string | null;
+    initialName?: string;
 }
 
-function SaveModal({ open, onClose, slots, onSaved, vestoUser }: SaveModalProps) {
+function SaveModal({ open, onClose, slots, onSaved, vestoUser, editOutfitId, initialName }: SaveModalProps) {
     const t       = useTranslations("canvas");
     const tCommon = useTranslations("common");
 
@@ -71,6 +74,12 @@ function SaveModal({ open, onClose, slots, onSaved, vestoUser }: SaveModalProps)
     const [visibility, setVisibility] = useState<OutfitVisibility>("private");
     const [error,      setError]      = useState<string | null>(null);
     const [isPending,  startTransition] = useTransition();
+
+    useEffect(() => {
+        if (open) {
+            setName(initialName || "");
+        }
+    }, [open, initialName]);
 
     const filledSlots = Object.entries(slots).filter(([, item]) => item !== null) as [SlotType, WardrobeItem][];
     const itemCount   = filledSlots.length;
@@ -87,8 +96,7 @@ function SaveModal({ open, onClose, slots, onSaved, vestoUser }: SaveModalProps)
 
         startTransition(async () => {
             try {
-                const outfitData = {
-                    userId: vestoUser.uid,
+                const outfitData: any = {
                     name: name.trim() || 'Yeni Kombin',
                     items: {
                         topId: slots.top?.id || null,
@@ -96,16 +104,22 @@ function SaveModal({ open, onClose, slots, onSaved, vestoUser }: SaveModalProps)
                         shoesId: slots.shoes?.id || null,
                         accessoryId: slots.accessory?.id || null,
                     },
-                    tags: [],
-                    createdAt: serverTimestamp(),
-                    lastWorn: null,
-                    wearCount: 0,
-                    isFavorite: false,
-                    isArchived: false,
                 };
                 
-                const docRef = await addDoc(collection(db, 'outfits'), outfitData);
-                onSaved(docRef.id);
+                if (editOutfitId) {
+                    await updateDoc(doc(db, 'outfits', editOutfitId), outfitData);
+                    onSaved(editOutfitId);
+                } else {
+                    outfitData.userId = vestoUser.uid;
+                    outfitData.tags = [];
+                    outfitData.createdAt = serverTimestamp();
+                    outfitData.lastWorn = null;
+                    outfitData.wearCount = 0;
+                    outfitData.isFavorite = false;
+                    outfitData.isArchived = false;
+                    const docRef = await addDoc(collection(db, 'outfits'), outfitData);
+                    onSaved(docRef.id);
+                }
                 onClose();
                 setName(""); setDescription(""); setOccasion(null); setSeasons([]); setVisibility("private");
             } catch (err: any) {
@@ -250,10 +264,40 @@ function SaveModal({ open, onClose, slots, onSaved, vestoUser }: SaveModalProps)
 // ── Main Canvas Page ──────────────────────────────────────────────────────────
 
 export default function CanvasPage() {
+    const t = useTranslations("canvas");
     const { items, loading }     = useWardrobe();
     const { vestoUser }          = useAuth();
+    const searchParams           = useSearchParams();
+    const editOutfitId           = searchParams.get("edit");
 
     const [slots,         setSlots]         = useState<SlotState>(EMPTY_SLOTS);
+    const [editOutfitName, setEditOutfitName] = useState("");
+
+    // Load outfit if editing
+    useEffect(() => {
+        if (!editOutfitId || loading || items.length === 0) return;
+        
+        async function fetchEditOutfit() {
+            try {
+                if (!editOutfitId) return;
+                const snap = await getDoc(doc(db, "outfits", editOutfitId));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    setEditOutfitName(data.name || "");
+                    
+                    const newSlots = { ...EMPTY_SLOTS };
+                    if (data.items?.topId) newSlots.top = items.find(i => i.id === data.items.topId) || null;
+                    if (data.items?.bottomId) newSlots.bottom = items.find(i => i.id === data.items.bottomId) || null;
+                    if (data.items?.shoesId) newSlots.shoes = items.find(i => i.id === data.items.shoesId) || null;
+                    if (data.items?.accessoryId) newSlots.accessory = items.find(i => i.id === data.items.accessoryId) || null;
+                    setSlots(newSlots);
+                }
+            } catch (err) {
+                console.error("Error loading outfit to edit:", err);
+            }
+        }
+        fetchEditOutfit();
+    }, [editOutfitId, loading, items]);
     const [activeId,      setActiveId]      = useState<UniqueIdentifier | null>(null);
     const [saveModalOpen, setSaveModalOpen] = useState(false);
     const [savedToast,    setSavedToast]    = useState<string | null>(null);
@@ -304,6 +348,35 @@ export default function CanvasPage() {
         setTimeout(() => setSavedToast(null), 4000);
     }
 
+    function handleAutoFill() {
+        if (!items || items.length === 0) return;
+        
+        const newSlots = { ...slots };
+        
+        const SLOT_CATEGORIES: Record<string, string[][]> = {
+            top: [['tops', 'top'], ['dresses', 'dress'], ['outerwear']],
+            bottom: [['bottoms', 'bottom']],
+            shoes: [['shoes', 'footwear']],
+            accessory: [['accessories', 'accessory', 'bags', 'jewelry']],
+        };
+        
+        (Object.keys(newSlots) as SlotType[]).forEach(slot => {
+            if (newSlots[slot] !== null) return; // already filled
+            const catGroups = SLOT_CATEGORIES[slot];
+            if (!catGroups) return;
+            
+            for (const cats of catGroups) {
+                const candidates = items.filter(item => cats.includes(item.category));
+                if (candidates.length > 0) {
+                    newSlots[slot] = candidates[Math.floor(Math.random() * candidates.length)];
+                    break;
+                }
+            }
+        });
+        
+        setSlots(newSlots);
+    }
+
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
@@ -321,6 +394,8 @@ export default function CanvasPage() {
                 slots={slots}
                 onSaved={handleSaved}
                 vestoUser={vestoUser}
+                editOutfitId={editOutfitId}
+                initialName={editOutfitName}
             />
 
             <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -362,6 +437,18 @@ export default function CanvasPage() {
                                 >
                                     <Trash2 size={13} />
                                     Temizle
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={loading || items.length === 0 || filledCount === 4}
+                                    onClick={handleAutoFill}
+                                    className="gap-1.5 border-accent/30 text-accent hover:bg-accent/10 text-xs h-8"
+                                    title={t("autoFillHint")}
+                                >
+                                    <Shuffle size={13} />
+                                    {t("autoFill")}
                                 </Button>
 
                                 <Button
