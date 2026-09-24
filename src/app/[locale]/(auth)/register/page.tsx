@@ -34,7 +34,7 @@ export default function RegisterPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ idToken }),
             });
-            router.push("/profile-setup");
+            window.location.href = window.location.pathname.replace("/register", "/profile-setup");
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : t("registerFailed"));
         } finally {
@@ -55,9 +55,9 @@ export default function RegisterPage() {
             });
 
             if (profile && !profile.profileSetupCompleted) {
-                router.push("/profile-setup");
+                window.location.href = window.location.pathname.replace("/register", "/profile-setup");
             } else {
-                router.push("/dashboard");
+                window.location.href = window.location.pathname.replace("/register", "/dashboard");
             }
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : t("googleFailed"));

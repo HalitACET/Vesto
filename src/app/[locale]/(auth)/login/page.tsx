@@ -44,9 +44,9 @@ export default function LoginPage() {
             }
 
             if (profile && !profile.profileSetupCompleted) {
-                router.push("/profile-setup");
+                window.location.href = window.location.pathname.replace("/login", "/profile-setup");
             } else {
-                router.push("/dashboard");
+                window.location.href = window.location.pathname.replace("/login", "/dashboard");
             }
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : t("loginFailed"));
