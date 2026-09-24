@@ -2,7 +2,7 @@ import {
   collection, query, where, orderBy,
   onSnapshot, addDoc, deleteDoc, updateDoc,
   doc, getDoc, setDoc, serverTimestamp,
-  increment, Timestamp
+  increment
 } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import type { ForumPost, ForumComment } from '@/types/forum';

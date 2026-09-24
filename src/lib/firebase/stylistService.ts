@@ -77,6 +77,8 @@ export function subscribeIncomingRecommendations(
             ...d.data(),
         })) as OutfitRecommendation[];
         callback(recs);
+    }, (error) => {
+        console.error("subscribeIncomingRecommendations error:", error);
     });
 }
 
@@ -138,6 +140,8 @@ export function subscribeRecommendationsByStatus(
       id: d.id,
       ...d.data(),
     })) as OutfitRecommendation[]);
+  }, (error) => {
+      console.error("subscribeRecommendationsByStatus error:", error);
   });
 }
 
