@@ -55,7 +55,21 @@
         "clients": "Clients",
         "settings": "Settings",
         "admin": "Admin",
-        "adminUsers": "User Management"
+        "adminUsers": "User Management",
+        "calendar": "Calendar",
+        "messages": "Messages",
+        "recommendations": "Recommendations",
+        "styleReport": "Style Report",
+        "aiMonitor": "AI Monitor",
+        "moderation": "Moderation",
+        "analytics": "Analytics",
+        "mobile": {
+            "dashboard": "Home",
+            "wardrobe": "Wardrobe",
+            "canvas": "Outfit",
+            "community": "Community",
+            "profile": "Profile"
+        }
     },
     "dashboard": {
         "overview": {
@@ -182,6 +196,27 @@
             "saveButton": "Save",
             "itemsRequired": "Add at least one item.",
             "saveError": "Error while saving."
+        },
+        "autoFill": "Auto-fill",
+        "autoFillHint": "Fill empty slots with random pieces from your wardrobe",
+        "slots": {
+            "accessory": {
+                "label": "Accessory",
+                "hint": "Hat, bag, jewelry..."
+            },
+            "top": {
+                "label": "Top / Dress",
+                "hint": "T-shirt, dress, jacket, outerwear"
+            },
+            "bottom": {
+                "label": "Bottom",
+                "hint": "Trousers, skirt, shorts..."
+            },
+            "shoes": {
+                "label": "Shoes",
+                "hint": "Sneakers, boots, heels..."
+            },
+            "remove": "Remove {label}"
         }
     },
     "community": {
@@ -195,7 +230,8 @@
             "certifiedStylist": "Certified Stylist",
             "stylist": "Stylist",
             "user": "User"
-        }
+        },
+        "challengesLink": "Challenges →"
     },
     "forum": {
         "title": "Community",
@@ -458,7 +494,9 @@
         "clearFilter": "Clear Filter",
         "filterAll": "All",
         "filterFavorites": "Favorites",
-        "filterRecentlyWorn": "Recently Worn"
+        "filterRecentlyWorn": "Recently Worn",
+        "markWorn": "Worn Today",
+        "shareToForum": "Share to Forum"
     },
     "landing": {
         "badge": "AI-Powered Fashion Platform",
@@ -510,5 +548,198 @@
         "updateSuccess": "Updated successfully",
         "loginSuccess": "Login successful",
         "logoutSuccess": "Logged out"
+    },
+    "commandPalette": {
+        "trigger": "Search...",
+        "placeholder": "Search items, pages or features...",
+        "noResults": "No results found",
+        "select": "Select",
+        "close": "Close",
+        "itemFallback": "Item",
+        "pages": {
+            "wardrobe": {
+                "title": "My Wardrobe",
+                "subtitle": "Manage your clothes"
+            },
+            "canvas": {
+                "title": "Outfit Editor",
+                "subtitle": "Create a new outfit"
+            },
+            "community": {
+                "title": "Community",
+                "subtitle": "Forum and discover"
+            },
+            "stylists": {
+                "title": "Stylists",
+                "subtitle": "Find a stylist"
+            },
+            "recommendations": {
+                "title": "Outfit Recommendations",
+                "subtitle": "Recommendations from stylists"
+            }
+        }
+    },
+    "errorBoundary": {
+        "title": "Something went wrong",
+        "description": "An error occurred while loading this section. Try refreshing the page.",
+        "reload": "Reload"
+    },
+    "welcomeTour": {
+        "skip": "Skip",
+        "next": "Next",
+        "start": "Start!",
+        "steps": {
+            "wardrobe": {
+                "title": "Build Your Wardrobe",
+                "desc": "Upload photos of your clothes and let AI analyze their color, category and material automatically.",
+                "action": "Go to Wardrobe"
+            },
+            "canvas": {
+                "title": "Create Outfits",
+                "desc": "Drag and drop clothes onto the mannequin and discover great outfits.",
+                "action": "Go to Editor"
+            },
+            "community": {
+                "title": "Join the Community",
+                "desc": "Share your outfits, connect with stylists and explore the Vesto fashion community.",
+                "action": "Go to Community"
+            }
+        }
+    },
+    "todayWidget": {
+        "title": "What Should I Wear Today?",
+        "notEnough": "Not enough clothes in your wardrobe.",
+        "another": "Another Suggestion",
+        "combine": "Build Outfit"
+    },
+    "itemDetail": {
+        "itemFallback": "Item",
+        "noImage": "No image",
+        "size": "Size: {size}",
+        "public": "Public",
+        "private": "Private",
+        "favorite": "Favorite",
+        "colors": "Colors",
+        "aiAnalysis": "AI Analysis",
+        "material": "Material:",
+        "pattern": "Pattern:",
+        "confidence": "Confidence:",
+        "wearCount": "Times worn",
+        "price": "Price",
+        "notes": "Notes",
+        "categories": {
+            "tops": "Tops",
+            "bottoms": "Bottoms",
+            "dresses": "Dresses",
+            "outerwear": "Outerwear",
+            "shoes": "Shoes",
+            "accessories": "Accessories",
+            "bags": "Bags",
+            "jewelry": "Jewelry"
+        }
+    },
+    "styleInsights": {
+        "title": "Your Style Stats",
+        "topColor": "The dominant color in your wardrobe is {hex} ({count} items).",
+        "topCategory": "{percentage}% of your wardrobe is in the {category} category.",
+        "missing": "Missing categories in your wardrobe: {list}. Consider adding new pieces!",
+        "avgWear": "Average times worn: {avg}.",
+        "avgWearLow": "Try wearing your clothes more often!",
+        "avgWearGood": "Great! You actively use your clothes.",
+        "newBadge": "NEW"
+    },
+    "chat": {
+        "conversations": "Conversations",
+        "noConversations": "No conversations found.",
+        "startConversation": "Start the conversation...",
+        "chatLabel": "Chat",
+        "emptyThread": "Send your first message to start the conversation.",
+        "inputPlaceholder": "Type your message...",
+        "emptyTitle": "Your Conversations",
+        "emptyDescription": "Select a conversation from the menu on the left to start messaging stylists or clients in real time.",
+        "userFallback": "User",
+        "unknownUser": "Unknown User",
+        "loadError": "Error",
+        "loadingName": "Loading...",
+        "me": "Me"
+    },
+    "wearCalendar": {
+        "title": "Wear Calendar",
+        "subtitle": "Track which outfits you wore on which day and enrich your style stats.",
+        "newOutfit": "Create New Outfit",
+        "more": "+{count} more",
+        "selectDay": "SELECT A DAY",
+        "selectDayHint": "Select a day on the calendar to see your outfits.",
+        "noLogsTitle": "No wear logs",
+        "noLogsDescription": "No outfit has been marked as worn on this day.",
+        "pickFromOutfits": "Pick from Outfits",
+        "dayLogs": "Outfits worn on this day ({count}):",
+        "weekdays": [
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+        ]
+    },
+    "challenges": {
+        "back": "Go Back",
+        "detailBadge": "Challenge Details",
+        "participants": "{count} Participants",
+        "participantsLower": "{count} participants",
+        "endsAt": "Ends: {time}",
+        "ended": "Ended",
+        "theme": "Theme: {theme}",
+        "join": "Join Challenge",
+        "joined": "✓ You joined this challenge",
+        "entriesTitle": "Submitted Outfits",
+        "noEntries": "No one has joined this challenge yet. Be the first!",
+        "justNow": "Just now",
+        "viewOutfit": "View Outfit",
+        "title": "Style Challenges",
+        "subtitle": "Join weekly themes, enter your outfits and let the community vote.",
+        "create": "Start a Challenge",
+        "noChallenges": "There are no active challenges right now.",
+        "active": "Active Challenges",
+        "finished": "Past / Completed",
+        "finishedBadge": "Ended",
+        "joinDialog": {
+            "title": "Join Challenge",
+            "pickOutfit": "Pick an Outfit",
+            "needOutfit": "You need to create an outfit before joining.",
+            "pickPlaceholder": "Select an outfit...",
+            "note": "Note (Optional)",
+            "notePlaceholder": "Describe your outfit's theme or style details...",
+            "joining": "Joining...",
+            "submit": "Join"
+        },
+        "createDialog": {
+            "title": "Start a Challenge",
+            "name": "Challenge Title",
+            "namePlaceholder": "e.g. Summer Season Chic",
+            "description": "Challenge Description",
+            "descriptionPlaceholder": "Describe the rules or how to participate...",
+            "theme": "Style Theme",
+            "themePlaceholder": "e.g. Monochrome, Casual",
+            "endsAt": "End Date",
+            "creating": "Starting...",
+            "submit": "Start"
+        },
+        "winner": {
+            "dialogTitle": "Winner",
+            "title": "Challenge Over!",
+            "mostLiked": "Most Liked",
+            "likes": "{count} Likes 💖",
+            "congrats": "Congratulations!"
+        },
+        "creatorFallback": "Fashionista",
+        "participantFallback": "Participant"
+    },
+    "publicProfile": {
+        "sendMessage": "Send Message",
+        "itemImageAlt": "Clothing image",
+        "itemDetailAlt": "Clothing detail"
     }
 }

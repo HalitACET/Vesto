@@ -79,7 +79,21 @@
         "clients": "Müşteriler",
         "settings": "Ayarlar",
         "admin": "Yönetim",
-        "adminUsers": "Kullanıcı Yönetimi"
+        "adminUsers": "Kullanıcı Yönetimi",
+        "calendar": "Takvim",
+        "messages": "Mesajlar",
+        "recommendations": "Öneriler",
+        "styleReport": "Stil Raporun",
+        "aiMonitor": "AI Monitör",
+        "moderation": "Moderasyon",
+        "analytics": "İstatistikler",
+        "mobile": {
+            "dashboard": "Panel",
+            "wardrobe": "Dolap",
+            "canvas": "Kombin",
+            "community": "Topluluk",
+            "profile": "Profil"
+        }
     },
     "dashboard": {
         "overview": {
@@ -209,6 +223,27 @@
             "saveButton": "Kaydet",
             "itemsRequired": "En az bir parça eklemelisiniz.",
             "saveError": "Kayıt sırasında hata oluştu."
+        },
+        "autoFill": "Otomatik Tamamla",
+        "autoFillHint": "Boş slotları dolabındaki parçalarla rastgele doldur",
+        "slots": {
+            "accessory": {
+                "label": "Aksesuar",
+                "hint": "Şapka, çanta, takı, kıyafet..."
+            },
+            "top": {
+                "label": "Üst / Elbise",
+                "hint": "Tişört, elbise, ceket, dış giyim"
+            },
+            "bottom": {
+                "label": "Alt",
+                "hint": "Pantolon, etek, şort..."
+            },
+            "shoes": {
+                "label": "Ayakkabı",
+                "hint": "Spor, bot, topuklu..."
+            },
+            "remove": "{label} kaldır"
         }
     },
     "community": {
@@ -222,7 +257,8 @@
             "certifiedStylist": "Sertifikalı Stilist",
             "stylist": "Stilist",
             "user": "Kullanıcı"
-        }
+        },
+        "challengesLink": "Challenge'lar →"
     },
     "forum": {
         "title": "Topluluk",
@@ -485,7 +521,9 @@
         "clearFilter": "Filtreyi Temizle",
         "filterAll": "Tümü",
         "filterFavorites": "Favoriler",
-        "filterRecentlyWorn": "Son Giyilen"
+        "filterRecentlyWorn": "Son Giyilen",
+        "markWorn": "Bugün Giyildi",
+        "shareToForum": "Forum'da Paylaş"
     },
     "landing": {
         "badge": "Yapay Zeka Destekli Moda Platformu",
@@ -537,5 +575,198 @@
         "updateSuccess": "Başarıyla güncellendi",
         "loginSuccess": "Giriş başarılı",
         "logoutSuccess": "Çıkış yapıldı"
+    },
+    "commandPalette": {
+        "trigger": "Ara...",
+        "placeholder": "Kıyafet, sayfa veya özellik ara...",
+        "noResults": "Sonuç bulunamadı",
+        "select": "Seç",
+        "close": "Kapat",
+        "itemFallback": "Kıyafet",
+        "pages": {
+            "wardrobe": {
+                "title": "Dolabım",
+                "subtitle": "Kıyafetlerini yönet"
+            },
+            "canvas": {
+                "title": "Kombin Editörü",
+                "subtitle": "Yeni kombin oluştur"
+            },
+            "community": {
+                "title": "Topluluk",
+                "subtitle": "Forum ve keşfet"
+            },
+            "stylists": {
+                "title": "Stilistler",
+                "subtitle": "Stilist bul"
+            },
+            "recommendations": {
+                "title": "Kombin Önerileri",
+                "subtitle": "Stilistlerden gelen öneriler"
+            }
+        }
+    },
+    "errorBoundary": {
+        "title": "Bir şeyler ters gitti",
+        "description": "Bu bölüm yüklenirken bir hata oluştu. Sayfayı yenilemeyi deneyin.",
+        "reload": "Yenile"
+    },
+    "welcomeTour": {
+        "skip": "Geç",
+        "next": "İleri",
+        "start": "Başla!",
+        "steps": {
+            "wardrobe": {
+                "title": "Dolabını Oluştur",
+                "desc": "Kıyafet fotoğraflarını yükle, AI otomatik olarak renk, kategori ve materyal bilgilerini analiz etsin.",
+                "action": "Dolaba Git"
+            },
+            "canvas": {
+                "title": "Kombin Oluştur",
+                "desc": "Sürükle bırak ile manneken üzerine kıyafetleri yerleştir, harika kombinler keşfet.",
+                "action": "Editöre Git"
+            },
+            "community": {
+                "title": "Topluluğa Katıl",
+                "desc": "Kombinlerini paylaş, stilistlerle bağlan ve Vesto modacı topluluğunu keşfet.",
+                "action": "Topluluğa Git"
+            }
+        }
+    },
+    "todayWidget": {
+        "title": "Bugün Ne Giyeyim?",
+        "notEnough": "Dolabında yeterli kıyafet yok.",
+        "another": "Başka Öneri",
+        "combine": "Kombinle"
+    },
+    "itemDetail": {
+        "itemFallback": "Kıyafet",
+        "noImage": "Resim yok",
+        "size": "Beden: {size}",
+        "public": "Herkese Açık",
+        "private": "Özel",
+        "favorite": "Favori",
+        "colors": "Renkler",
+        "aiAnalysis": "AI Analiz",
+        "material": "Malzeme:",
+        "pattern": "Desen:",
+        "confidence": "Güven:",
+        "wearCount": "Giyilme",
+        "price": "Fiyat",
+        "notes": "Notlar",
+        "categories": {
+            "tops": "Üst Giyim",
+            "bottoms": "Alt Giyim",
+            "dresses": "Elbise",
+            "outerwear": "Dış Giyim",
+            "shoes": "Ayakkabı",
+            "accessories": "Aksesuar",
+            "bags": "Çanta",
+            "jewelry": "Takı"
+        }
+    },
+    "styleInsights": {
+        "title": "Stil İstatistiklerin",
+        "topColor": "Dolabında en çok {hex} rengi hakimiyet kuruyor ({count} parça).",
+        "topCategory": "Gardırobunun %{percentage}'i {category} kategorisinden oluşuyor.",
+        "missing": "Gardırobunda eksik kategoriler: {list}. Yeni kıyafetler eklemeyi düşün!",
+        "avgWear": "Ortalama giyilme sayısı: {avg} kez.",
+        "avgWearLow": "Kıyafetlerini daha sık kullanmayı dene!",
+        "avgWearGood": "Harika! Kıyafetlerini aktif kullanıyorsun.",
+        "newBadge": "YENİ"
+    },
+    "chat": {
+        "conversations": "Sohbetler",
+        "noConversations": "Sohbet bulunamadı.",
+        "startConversation": "Sohbeti başlatın...",
+        "chatLabel": "Sohbet",
+        "emptyThread": "İlk mesajınızı göndererek sohbeti başlatın.",
+        "inputPlaceholder": "Mesajınızı yazın...",
+        "emptyTitle": "Sohbetleriniz",
+        "emptyDescription": "Stilistler veya müşterilerinizle gerçek zamanlı mesajlaşmaya başlamak için soldaki menüden bir sohbet seçin.",
+        "userFallback": "Kullanıcı",
+        "unknownUser": "Bilinmeyen Kullanıcı",
+        "loadError": "Hata",
+        "loadingName": "Yükleniyor...",
+        "me": "Ben"
+    },
+    "wearCalendar": {
+        "title": "Giyim Takvimi",
+        "subtitle": "Hangi kombinleri hangi gün giydiğini takip et ve stil analizini zenginleştir.",
+        "newOutfit": "Yeni Kombin Oluştur",
+        "more": "+{count} daha",
+        "selectDay": "GÜN SEÇİN",
+        "selectDayHint": "Kombinlerinizi görmek için takvimden bir gün seçin.",
+        "noLogsTitle": "Giyim kaydı yok",
+        "noLogsDescription": "Bu gün için giyilmiş bir kombin işaretlenmemiş.",
+        "pickFromOutfits": "Kombinlerden Seç",
+        "dayLogs": "Bu gün giyilen kombinler ({count}):",
+        "weekdays": [
+            "Pzt",
+            "Sal",
+            "Çar",
+            "Per",
+            "Cum",
+            "Cmt",
+            "Paz"
+        ]
+    },
+    "challenges": {
+        "back": "Geri Dön",
+        "detailBadge": "Challenge Detayı",
+        "participants": "{count} Katılımcı",
+        "participantsLower": "{count} katılımcı",
+        "endsAt": "Bitiş: {time}",
+        "ended": "Süre bitti",
+        "theme": "Tema: {theme}",
+        "join": "Challenge'a Katıl",
+        "joined": "✓ Bu challenge'a katıldınız",
+        "entriesTitle": "Katılımcı Kombinleri",
+        "noEntries": "Henüz bu yarışmaya katılan olmamış. İlk katılan siz olun!",
+        "justNow": "Az önce",
+        "viewOutfit": "Kombini İncele",
+        "title": "Mod Challenge'ları",
+        "subtitle": "Haftalık temalara katılın, kombinlerinizi yarıştırın ve topluluk oylamasına sunun.",
+        "create": "Yarışma Başlat",
+        "noChallenges": "Şu an aktif bir yarışma bulunmuyor.",
+        "active": "Aktif Yarışmalar",
+        "finished": "Geçmiş/Tamamlananlar",
+        "finishedBadge": "Sona Erdi",
+        "joinDialog": {
+            "title": "Yarışmaya Katıl",
+            "pickOutfit": "Kombin Seç",
+            "needOutfit": "Katılmak için önce bir kombin oluşturmalısınız.",
+            "pickPlaceholder": "Kombin seçin...",
+            "note": "Katılımcı Notu (Opsiyonel)",
+            "notePlaceholder": "Kombininizin temasını veya stil detaylarını yazın...",
+            "joining": "Katılınıyor...",
+            "submit": "Katıl"
+        },
+        "createDialog": {
+            "title": "Yarışma Başlat",
+            "name": "Yarışma Başlığı",
+            "namePlaceholder": "örn. Yaz Sezonu Şıklığı",
+            "description": "Yarışma Açıklaması",
+            "descriptionPlaceholder": "Yarışma kurallarını veya katılım detaylarını yazın...",
+            "theme": "Stil Teması",
+            "themePlaceholder": "örn. Monokrom, Casual",
+            "endsAt": "Bitiş Tarihi",
+            "creating": "Başlatılıyor...",
+            "submit": "Başlat"
+        },
+        "winner": {
+            "dialogTitle": "Kazanan",
+            "title": "Yarışma Bitti!",
+            "mostLiked": "En Çok Beğeniyi Alan",
+            "likes": "{count} Beğeni 💖",
+            "congrats": "Tebrikler!"
+        },
+        "creatorFallback": "Modacı",
+        "participantFallback": "Katılımcı"
+    },
+    "publicProfile": {
+        "sendMessage": "Mesaj Gönder",
+        "itemImageAlt": "Kıyafet resmi",
+        "itemDetailAlt": "Kıyafet detay"
     }
 }
