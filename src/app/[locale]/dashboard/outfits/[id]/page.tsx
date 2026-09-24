@@ -12,15 +12,18 @@ import { ItemThumb } from "@/components/outfits/ItemThumb";
 import { ArrowLeft, Heart, Pencil, Calendar, ShoppingBag, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { tr as trLocale, enUS } from "date-fns/locale";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Outfit } from "@/types";
 import { ShareOutfitDialog } from "@/components/forum/ShareOutfitDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function OutfitDetailPage() {
     const params = useParams();
     const router = useRouter();
     const locale = useLocale();
     const dateLocale = locale === "tr" ? trLocale : enUS;
+    const { vestoUser } = useAuth();
+    const t = useTranslations("outfits");
 
     const [outfit, setOutfit] = useState<Outfit | null>(null);
     const [loading, setLoading] = useState(true);
@@ -55,6 +58,40 @@ export default function OutfitDetailPage() {
             await updateDoc(doc(db, "outfits", outfitId), { isFavorite: next });
         } catch {
             setOutfit((prev) => prev ? { ...prev, isFavorite: !next } : prev);
+        }
+    };
+
+    const handleMarkAsWorn = async () => {
+        if (!outfit) return;
+        const newCount = (outfit.wearCount ?? 0) + 1;
+        const now = new Date();
+        const nowStr = now.toISOString();
+
+        // Optimistic update
+        setOutfit((prev) => prev ? { ...prev, wearCount: newCount, lastWornAt: nowStr } : prev);
+
+        try {
+            // Update outfit doc
+            await updateDoc(doc(db, "outfits", outfitId), {
+                wearCount: newCount,
+                lastWornAt: nowStr,
+                lastWorn: nowStr
+            });
+
+            // Log the wear event
+            const { addDoc, collection, serverTimestamp } = await import("firebase/firestore");
+            await addDoc(collection(db, "wearLogs"), {
+                userId: outfit.userId,
+                outfitId: outfitId,
+                outfitName: outfit.name,
+                wornAt: serverTimestamp(),
+                thumbnailUrl: outfit.thumbnailUrl || null,
+                itemSnapshots: outfit.itemSnapshots || null
+            });
+        } catch (err) {
+            console.error("Error logging outfit wear:", err);
+            // Revert count on error
+            setOutfit((prev) => prev ? { ...prev, wearCount: (outfit.wearCount ?? 0) } : prev);
         }
     };
 
@@ -136,33 +173,45 @@ export default function OutfitDetailPage() {
                         </h1>
                     </div>
                     <div className="flex gap-3 flex-shrink-0">
-                        <Button
-                            variant="outline"
-                            className="h-10 px-5 rounded-md border-border text-foreground hover:bg-muted active:scale-95 transition-all duration-200"
-                            onClick={() => setShareOpen(true)}
-                        >
-                            <Share2 size={14} className="mr-2" />
-                            Forum&apos;da Paylaş
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-10 px-5 rounded-md border-border text-foreground hover:bg-muted active:scale-95 transition-all duration-200"
-                            onClick={() => router.push(`/dashboard/canvas?edit=${outfitId}`)}
-                        >
-                            <Pencil size={14} className="mr-2" />
-                            Düzenle
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className={`h-10 w-10 p-0 rounded-md transition-all active:scale-95 duration-200 ${
-                                outfit?.isFavorite
-                                    ? "bg-red-50 dark:bg-red-950/20 text-red-500 border-red-200 dark:border-red-800"
-                                    : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                            }`}
-                            onClick={handleToggleFavorite}
-                        >
-                            <Heart size={16} className={outfit?.isFavorite ? "fill-current" : ""} />
-                        </Button>
+                        {vestoUser?.uid === outfit?.userId && (
+                            <>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 px-5 rounded-md border-accent/20 text-accent hover:bg-accent/10 active:scale-95 transition-all duration-200"
+                                    onClick={handleMarkAsWorn}
+                                >
+                                    <Calendar size={14} className="mr-2" />
+                                    {t("markWorn")}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 px-5 rounded-md border-border text-foreground hover:bg-muted active:scale-95 transition-all duration-200"
+                                    onClick={() => setShareOpen(true)}
+                                >
+                                    <Share2 size={14} className="mr-2" />
+                                    {t("shareToForum")}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 px-5 rounded-md border-border text-foreground hover:bg-muted active:scale-95 transition-all duration-200"
+                                    onClick={() => router.push(`/dashboard/canvas?edit=${outfitId}`)}
+                                >
+                                    <Pencil size={14} className="mr-2" />
+                                    {t("edit")}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className={`h-10 w-10 p-0 rounded-md transition-all active:scale-95 duration-200 ${
+                                        outfit?.isFavorite
+                                            ? "bg-red-50 dark:bg-red-950/20 text-red-500 border-red-200 dark:border-red-800"
+                                            : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                                    }`}
+                                    onClick={handleToggleFavorite}
+                                >
+                                    <Heart size={16} className={outfit?.isFavorite ? "fill-current" : ""} />
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
 
