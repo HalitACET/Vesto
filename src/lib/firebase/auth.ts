@@ -77,6 +77,9 @@ export async function signInWithGoogle(): Promise<User> {
 
 export async function signOut(): Promise<void> {
     await firebaseSignOut(auth);
+    
+    // Sunucu tarafındaki oturum çerezini (cookie) de temizle
+    await fetch("/api/auth/session", { method: "DELETE" });
 }
 
 export function watchAuthState(callback: (user: User | null) => void) {
