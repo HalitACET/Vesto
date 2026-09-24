@@ -31,6 +31,7 @@ export interface CorrectItemInput {
 export interface ActionResult {
     ok: boolean;
     error?: string;
+    data?: { strikes?: number };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
